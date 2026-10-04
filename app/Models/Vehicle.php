@@ -8,7 +8,7 @@ class Vehicle extends Model
     use HasFactory;
     protected $fillable = [
         'vin', 'plate', 'brand', 'model', 'year', 'color', 
-        'theft_report_address', 'observations', 'status', 'registered_by'
+        'theft_report_address', 'theft_latitude', 'theft_longitude', 'observations', 'status', 'registered_by'
     ];
 
     public function registeredBy()

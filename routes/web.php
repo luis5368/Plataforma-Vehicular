@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\ConsultationController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\AuditLogController;
 
 // ======================================================================
 // 1. RUTAS PÚBLICAS (No requieren autenticación)
@@ -45,26 +48,20 @@ Route::middleware(['auth'])->group(function () {
     // Módulo de Consultas: Accesible para 'admin', 'registro' y 'consulta'
     // (Preparado para el Sprint 5: Consulta por Placa y Alertas)
     // ------------------------------------------------------------------
+// Módulo de Consultas: Accesible para 'admin', 'registro' y 'consulta'
     Route::middleware(['role:admin,registro,consulta'])->group(function () {
-        Route::get('/consultar', function () {
-            return view('consultations.search'); // Vista que crearemos a continuación
-        })->name('consultar.index');
-
-        Route::get('/historial', function () {
-            return 'Aquí irá el historial de consultas del usuario (Próximo Sprint)';
-        })->name('consultar.historial');
+        Route::get('/consultar', [ConsultationController::class, 'index'])->name('consultar.index');
+        Route::get('/consultar/buscar', [ConsultationController::class, 'buscar'])->name('consultar.buscar');
+        Route::get('/historial', [ConsultationController::class, 'historial'])->name('consultar.historial');
     });
-
     // ------------------------------------------------------------------
     // Módulo de Administración: Exclusivo para rol 'admin'
     // ------------------------------------------------------------------
+// Módulo de Administración: Solo 'admin'
     Route::middleware(['role:admin'])->group(function () {
-        Route::get('/admin/usuarios', function () {
-            return 'Aquí irá la gestión de usuarios y roles (Próximo Sprint)';
-        })->name('admin.usuarios');
-
-        Route::get('/admin/bitacora', function () {
-            return 'Aquí irá la visualización de la bitácora de auditoría (Próximo Sprint)';
-        })->name('admin.bitacora');
+        Route::resource('admin/usuarios', UserController::class)->names('admin.usuarios');
+        
+        // La bitácora la haremos en el siguiente paso
+    Route::get('/admin/bitacora', [AuditLogController::class, 'index'])->name('admin.bitacora');
     });
 });

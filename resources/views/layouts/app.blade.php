@@ -11,28 +11,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .navbar-brand {
-            font-weight: bold;
-        }
-        .sidebar {
-            min-height: calc(100vh - 56px);
-            background-color: #343a40;
-        }
-        .sidebar .nav-link {
-            color: #adb5bd;
-            padding: 12px 20px;
-        }
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
-            color: #fff;
-            background-color: #495057;
-        }
-        .content-wrapper {
-            padding: 20px;
-        }
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: bold; }
+        .sidebar { min-height: calc(100vh - 56px); background-color: #343a40; }
+        .sidebar .nav-link { color: #adb5bd; padding: 12px 20px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background-color: #495057; }
+        .content-wrapper { padding: 20px; }
     </style>
 </head>
 <body>
@@ -43,11 +27,9 @@
             <a class="navbar-brand" href="{{ route('dashboard') }}">
                 <i class="bi bi-car-front-fill"></i> InfoVehicular GT
             </a>
-            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
@@ -102,6 +84,12 @@
                         </li>
 
                         <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('consultar.region') ? 'active' : '' }}" href="{{ route('consultar.region') }}">
+                                 <i class="bi bi-map"></i> Análisis por Región
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('consultar.historial') ? 'active' : '' }}" href="{{ route('consultar.historial') }}">
                                 <i class="bi bi-clock-history"></i> Mi Historial
                             </a>
@@ -151,7 +139,6 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     @stack('scripts')
 </body>
 </html>

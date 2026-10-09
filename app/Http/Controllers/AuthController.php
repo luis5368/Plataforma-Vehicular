@@ -88,7 +88,7 @@ class AuthController extends Controller
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
-                    'password' => null, // No necesita password si usa Google
+                    'password' => bcrypt('usuario_google'), // <--- CAMBIO IMPORTANTE AQUÍ
                     'role_id' => $consultaRole->id,
                 ]);
             } elseif (!$user->google_id) {

@@ -79,7 +79,7 @@
 
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('consultar.*') ? 'active' : '' }}" href="{{ route('consultar.index') }}">
-                                <i class="bi bi-search"></i> Consultar Placa
+                                <i class="bi bi-search"></i> Consultar VIN
                             </a>
                         </li>
 

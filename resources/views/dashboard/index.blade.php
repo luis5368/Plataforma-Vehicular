@@ -65,8 +65,9 @@
         <!-- Top Departamentos -->
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Top 5 Departamentos con más Robos</h5>
+                    <small class="text-white-50 fst-italic" style="font-size: 0.75rem;">* Identificados por VIN único</small>
                 </div>
                 <div class="card-body">
                     @if($topDepartments->count() > 0)
@@ -100,8 +101,9 @@
         <!-- Top Municipios -->
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-building"></i> Top 5 Municipios con más Robos</h5>
+                    <small class="text-white-50 fst-italic" style="font-size: 0.75rem;">* Identificados por VIN único</small>
                 </div>
                 <div class="card-body">
                     @if($topMunicipalities->count() > 0)
@@ -137,8 +139,9 @@
         <!-- Distribución por Zonas (Guatemala) -->
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-map"></i> Robos por Zona (Departamento de Guatemala)</h5>
+                    <small class="text-white-50 fst-italic" style="font-size: 0.75rem;">* Identificados por VIN único</small>
                 </div>
                 <div class="card-body">
                     @if($zoneDistribution->count() > 0)
@@ -170,8 +173,9 @@
         <!-- Marcas más robadas -->
         <div class="col-md-6 mb-4">
             <div class="card shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-car-front"></i> Top 5 Marcas más Robadas</h5>
+                    <small class="text-white-50 fst-italic" style="font-size: 0.75rem;">* Identificados por VIN único</small>
                 </div>
                 <div class="card-body">
                     @if($topBrands->count() > 0)
@@ -216,7 +220,10 @@
                             </a>
                         @endif
                         <a href="{{ route('consultar.index') }}" class="btn btn-primary btn-lg">
-                            <i class="bi bi-search"></i> Consultar por Placa/VIN
+                            <i class="bi bi-fingerprint"></i> Consultar por VIN (Recomendado)
+                        </a>
+                        <a href="{{ route('consultar.region') }}" class="btn btn-dark btn-lg">
+                            <i class="bi bi-map"></i> Análisis por Región
                         </a>
                         <a href="{{ route('consultar.historial') }}" class="btn btn-info btn-lg text-white">
                             <i class="bi bi-clock-history"></i> Mi Historial

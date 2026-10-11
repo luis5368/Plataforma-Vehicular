@@ -15,37 +15,37 @@
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th>Fecha y Hora</th>
-                            <th>Placa Consultada</th>
+                            <th>Fecha</th>
+                            <th>VIN</th>
+                            <th>Placa</th>
                             <th>Vehículo</th>
                             <th>Resultado</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($consultations as $consultation)
+                        @foreach($consultations as $c)
                         <tr>
-                            <td>{{ $consultation->consultation_date->format('d/m/Y H:i') }}</td>
-                            <td><strong>{{ $consultation->vehicle->plate ?? 'N/A' }}</strong></td>
+                            <td>{{ $c->consultation_date->format('d/m/Y H:i') }}</td>
+                            <td><code class="small">{{ $c->vehicle->vin ?? 'N/A' }}</code></td>
+                            <td><strong>{{ $c->vehicle->plate ?? 'N/A' }}</strong></td>
                             <td>
-                                @if($consultation->vehicle)
-                                    {{ $consultation->vehicle->brand }} {{ $consultation->vehicle->model }}
+                                @if($c->vehicle)
+                                    {{ $c->vehicle->brand }} {{ $c->vehicle->model }}
                                 @else
                                     <span class="text-muted">No encontrado</span>
                                 @endif
                             </td>
                             <td>
-                                @if($consultation->result === 'con_reporte_activo')
+                                @if($c->result === 'con_reporte_activo')
                                     <span class="badge bg-danger">
-                                        <i class="bi bi-exclamation-triangle"></i> Con Reporte de Robo
+                                        <i class="bi bi-exclamation-triangle"></i> Con Reporte
                                     </span>
-                                @elseif($consultation->result === 'sin_reporte')
+                                @elseif($c->result === 'sin_reporte')
                                     <span class="badge bg-success">
                                         <i class="bi bi-check-circle"></i> Sin Reportes
                                     </span>
                                 @else
-                                    <span class="badge bg-secondary">
-                                        <i class="bi bi-question-circle"></i> No Encontrado
-                                    </span>
+                                    <span class="badge bg-secondary">No Encontrado</span>
                                 @endif
                             </td>
                         </tr>

@@ -44,12 +44,12 @@
                         <div class="col-md-6">
                             <table class="table table-borderless table-sm">
                                 <tr>
-                                    <th width="40%" class="text-muted">Placa:</th>
-                                    <td><strong class="fs-5">{{ $vehicle->plate }}</strong></td>
+                                    <th width="40%" class="text-primary"><i class="bi bi-fingerprint"></i> VIN:</th>
+                                    <td><strong class="fs-5 text-primary">{{ $vehicle->vin }}</strong></td>
                                 </tr>
                                 <tr>
-                                    <th class="text-muted">VIN:</th>
-                                    <td>{{ $vehicle->vin }}</td>
+                                    <th class="text-muted">Placa:</th>
+                                    <td>{{ $vehicle->plate }}</td>
                                 </tr>
                                 <tr>
                                     <th class="text-muted">Marca:</th>

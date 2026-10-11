@@ -8,7 +8,9 @@
     
     <!-- Bootstrap 5.3 CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Bootstrap Icons CDN (Versión actualizada y estable) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
         body { background-color: #f8f9fa; }
@@ -17,6 +19,30 @@
         .sidebar .nav-link { color: #adb5bd; padding: 12px 20px; }
         .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background-color: #495057; }
         .content-wrapper { padding: 20px; }
+
+        /* ========================================== */
+        /* CORRECCIÓN PARA ÍCONOS GIGANTES (PAGINACIÓN) */
+        /* ========================================== */
+        /* Forzar tamaño normal a todos los íconos de Bootstrap */
+        .bi, [class^="bi-"], [class*=" bi-"] {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.125em;
+            font-size: 1rem !important;
+        }
+
+        /* Corrección específica para los botones de paginación de Laravel */
+        .pagination .page-link .bi {
+            font-size: 1rem !important;
+            width: 1em !important;
+            height: 1em !important;
+        }
+
+        /* Asegurar que los íconos dentro de botones se vean bien */
+        .btn .bi {
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>

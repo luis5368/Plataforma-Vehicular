@@ -53,6 +53,7 @@
                     <table class="table table-hover table-sm mb-0">
                         <thead class="table-light sticky-top">
                             <tr>
+                                <th>VIN</th>
                                 <th>Placa</th>
                                 <th>Ubicación</th>
                                 <th>Fecha</th>
@@ -61,9 +62,10 @@
                         <tbody>
                             @foreach($vehicles as $v)
                             <tr>
-                                <td><strong>{{ $v->plate }}</strong><br><small class="text-muted">{{ $v->brand }}</small></td>
+                                <td><code class="small">{{ Str::limit($v->vin, 12, '...') }}</code></td>
+                                <td><strong>{{ $v->plate }}</strong></td>
                                 <td><small>{{ $v->municipality }}, {{ $v->zone }}</small></td>
-                                <td><small>{{ \Carbon\Carbon::parse($v->theftReport->report_date)->format('d/m/y') }}</small></td>
+                                <td><small>{{ \Carbon\Carbon::parse($v->theftReport->report_date)->format('d/m/y') }}</small></td>  
                             </tr>
                             @endforeach
                         </tbody>

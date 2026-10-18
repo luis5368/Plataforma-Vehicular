@@ -20,7 +20,6 @@
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <!-- VIN PRIMERO Y PRINCIPAL -->
                             <th width="25%">
                                 <i class="bi bi-fingerprint text-primary"></i> VIN
                             </th>
@@ -36,13 +35,11 @@
                     <tbody>
                         @foreach($vehicles as $vehicle)
                         <tr>
-                            <!-- VIN DESTACADO -->
                             <td>
                                 <code class="text-primary fw-bold" style="font-size: 0.9rem;">
                                     {{ $vehicle->vin }}
                                 </code>
                             </td>
-                            <!-- Placa en segundo plano -->
                             <td>
                                 <span class="text-muted">{{ $vehicle->plate }}</span>
                             </td>
@@ -69,7 +66,13 @@
                                        title="Ver detalles">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    @if(auth()->user()->role->name === 'admin' || auth()->user()->role->name === 'registro')
+                                    
+                                    @php
+                                        // Un usuario puede editar/eliminar si es admin O si él registró el vehículo
+                                        $canModify = auth()->user()->role->name === 'admin' || $vehicle->registered_by === auth()->id();
+                                    @endphp
+
+                                    @if($canModify)
                                         <a href="{{ route('vehiculos.edit', $vehicle->id) }}" 
                                            class="btn btn-warning" 
                                            title="Editar">
@@ -94,7 +97,6 @@
                 </table>
             </div>
 
-            <!-- Paginación forzada a Bootstrap 5 para evitar íconos gigantes -->
             <div class="mt-3">
                 {{ $vehicles->links('pagination::bootstrap-5') }}
             </div>

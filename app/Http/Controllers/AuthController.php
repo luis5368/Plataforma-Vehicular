@@ -45,6 +45,50 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
+    // Mostrar el formulario de registro tradicional
+    public function showRegister(Request $request)
+    {
+        // Recibe 'consulta' o 'registro' desde la URL, por defecto 'consulta'
+        $selectedRole = $request->query('role', 'consulta');
+        return view('auth.register', compact('selectedRole'));
+    }
+
+    // Procesar el registro tradicional
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:consulta,registro', // Solo permite estos dos roles
+        ]);
+
+        // Buscar el ID del rol seleccionado
+        $role = \App\Models\Role::where('name', $validated['role'])->first();
+
+        // Crear el usuario
+        $user = \App\Models\User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+            'role_id' => $role ? $role->id : 3, // 3 es el ID por defecto de 'consulta'
+        ]);
+
+        // Iniciar sesión automáticamente
+        \Illuminate\Support\Facades\Auth::login($user);
+
+        // Bitácora
+        \App\Models\AuditLog::create([
+            'user_id' => $user->id,
+            'action' => 'register',
+            'table_name' => 'users',
+            'record_id' => $user->id,
+            'ip_address' => $request->ip(),
+        ]);
+
+        return redirect()->route('dashboard')->with('success', '¡Cuenta creada exitosamente! Bienvenido a InfoVehicular GT.');
+    }
+
     // Cerrar sesión
     public function logout(Request $request)
     {
@@ -88,7 +132,7 @@ class AuthController extends Controller
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
-                    'password' => bcrypt('usuario_google'), // <--- CAMBIO IMPORTANTE AQUÍ
+                    'password' => bcrypt('usuario_google'),
                     'role_id' => $consultaRole->id,
                 ]);
             } elseif (!$user->google_id) {

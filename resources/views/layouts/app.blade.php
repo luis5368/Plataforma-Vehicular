@@ -14,12 +14,20 @@
     <!-- Barra de Navegación Superior -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">
+            <a class="navbar-brand" href="{{ route('dashboard') }}" aria-label="InfoVehicular GT: ir al panel">
                 <x-brand :compact="true" />
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir menú de cuenta">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <div class="navbar-account-tools">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Ver información de mi cuenta">
+                    <i class="bi bi-person-circle" aria-hidden="true"></i><span class="account-toggle-label">Cuenta</span>
+                </button>
+                <form action="{{ route('logout') }}" method="POST" class="navbar-logout">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-light logout-button">
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
@@ -28,14 +36,6 @@
                             {{ auth()->user()->name }}
                             <span class="badge bg-light text-primary">{{ ucfirst(auth()->user()->role?->name ?? 'Sin rol') }}</span>
                         </span>
-                    </li>
-                    <li class="nav-item">
-                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="btn btn-outline-light btn-sm ms-2">
-                                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                            </button>
-                        </form>
                     </li>
                 </ul>
             </div>

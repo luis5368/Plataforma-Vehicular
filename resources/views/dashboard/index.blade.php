@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('content')
-<h1 class="h2">Panel de Control <span class="badge bg-primary">{{ $user->role?->name }}</span></h1>
+<header class="dashboard-heading"><div><span class="eyebrow">CENTRO DE INFORMACIÓN VEHICULAR</span><h1>Panel de Control</h1><p>Explora los reportes y su contexto con los filtros geográficos.</p></div><span class="badge bg-primary"><i class="bi bi-person-badge" aria-hidden="true"></i> {{ $user->role?->name }}</span></header>
 @include('reports.filters')
 @include('reports.analytics')
 <p class="mt-4 text-secondary">{{ $stats['total_users'] }} usuarios · {{ $stats['total_consultations'] }} consultas globales · {{ $stats['consultations_today'] }} consultas hoy</p>

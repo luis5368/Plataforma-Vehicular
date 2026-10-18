@@ -1,0 +1,3 @@
+@props(['status'])
+@php($labels = ['pendiente_validacion'=>'Pendiente de validación: no confirmado','validado'=>'Reporte validado','rechazado'=>'Reporte rechazado','resuelto'=>'Reporte resuelto','sin_reporte'=>'Sin reportes registrados','no_encontrado'=>'Sin resultados'])
+<span class="badge text-bg-{{ $status === 'validado' ? 'danger' : ($status === 'pendiente_validacion' ? 'warning' : 'secondary') }}">{{ $labels[$status] ?? $status }}</span>

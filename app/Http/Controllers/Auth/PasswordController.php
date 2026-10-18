@@ -17,7 +17,11 @@ class PasswordController extends Controller
     {
         $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
+            'password' => ['required', Password::defaults(), 'confirmed', 'max:1024', function ($attribute, $value, $fail) use ($request) {
+                if (strcasecmp($value, $request->user()->email) === 0) {
+                    $fail('La contraseña no debe ser igual al correo.');
+                }
+            }],
         ]);
 
         $request->user()->update([

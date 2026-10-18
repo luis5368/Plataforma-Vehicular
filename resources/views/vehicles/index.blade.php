@@ -6,7 +6,7 @@
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-car-front"></i> Vehículos Registrados</h2>
-        @if(auth()->user()->role->name === 'admin' || auth()->user()->role->name === 'registro')
+        @if(auth()->user()->role?->name === 'admin' || auth()->user()->role?->name === 'registro')
             <a href="{{ route('vehiculos.create') }}" class="btn btn-success">
                 <i class="bi bi-plus-circle"></i> Registrar Nuevo
             </a>
@@ -56,7 +56,7 @@
                             </td>
                             <td>
                                 <span class="badge bg-{{ $vehicle->status === 'activo' ? 'success' : ($vehicle->status === 'reportado' ? 'danger' : 'secondary') }}">
-                                    {{ ucfirst($vehicle->status) }}
+                                    {{ $vehicle->status === 'reportado' ? 'Con reporte: revisar estado' : ucfirst($vehicle->status) }}
                                 </span>
                             </td>
                             <td>
@@ -69,7 +69,7 @@
                                     
                                     @php
                                         // Un usuario puede editar/eliminar si es admin O si él registró el vehículo
-                                        $canModify = auth()->user()->role->name === 'admin' || $vehicle->registered_by === auth()->id();
+                                        $canModify = auth()->user()->role?->name === 'admin' || $vehicle->registered_by === auth()->id();
                                     @endphp
 
                                     @if($canModify)
@@ -107,7 +107,7 @@
         <div class="card-body text-center py-5">
             <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
             <p class="mt-3 text-muted">No hay vehículos registrados aún.</p>
-            @if(auth()->user()->role->name === 'admin' || auth()->user()->role->name === 'registro')
+            @if(auth()->user()->role?->name === 'admin' || auth()->user()->role?->name === 'registro')
                 <a href="{{ route('vehiculos.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Registrar primer vehículo
                 </a>

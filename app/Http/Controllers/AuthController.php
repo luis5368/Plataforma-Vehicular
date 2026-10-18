@@ -2,159 +2,142 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
+use App\Models\Role;
+use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\AuditLog;
-use App\Models\User;
-use App\Models\Role;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
-    // Mostrar el formulario de login
     public function showLogin()
     {
         return view('auth.login');
     }
 
-    // Procesar el login con email y contraseña
     public function login(Request $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
-
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-
-            // Registrar en la bitácora
-            AuditLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'login',
-                'table_name' => 'users',
-                'record_id' => Auth::id(),
-                'ip_address' => $request->ip(),
-            ]);
-
-            return redirect()->intended(route('dashboard'));
+        $credentials = $request->validate(['email' => 'required|email', 'password' => 'required|string']);
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            throw ValidationException::withMessages(['email' => 'Credenciales incorrectas.']);
         }
+        if (! $request->user()->is_active || ! $request->user()->role) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            throw ValidationException::withMessages(['email' => 'Cuenta no disponible.']);
+        }
+        $request->session()->regenerate();
+        $this->audit('login', $request->user());
 
-        return back()->withErrors([
-            'email' => 'Las credenciales proporcionadas no coinciden con nuestros registros.',
-        ])->onlyInput('email');
+        return redirect()->route('dashboard');
     }
 
-    // Mostrar el formulario de registro tradicional
     public function showRegister(Request $request)
     {
-        // Recibe 'consulta' o 'registro' desde la URL, por defecto 'consulta'
+        $request->validate(['role' => 'sometimes|in:consulta,registro']);
         $selectedRole = $request->query('role', 'consulta');
+        $request->session()->put('registration_role', $selectedRole);
+
         return view('auth.register', compact('selectedRole'));
     }
 
-    // Procesar el registro tradicional
     public function register(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:consulta,registro', // Solo permite estos dos roles
+        $data = $request->validate([
+            'name' => 'required|string|max:255', 'email' => 'required|email|max:255|unique:users',
+            'password' => ['required', 'string', 'max:1024', 'confirmed', 'different:email', Password::min(12)->letters()->numbers()],
+            'role' => 'required|in:consulta,registro',
         ]);
+        $choice = $request->session()->get('registration_role');
+        if (! in_array($choice, ['consulta', 'registro'], true) || $choice !== $data['role']) {
+            throw ValidationException::withMessages(['role' => 'Selecciona nuevamente el tipo de cuenta.']);
+        }
+        $role = Role::where('name', $choice)->first();
+        if (! $role) {
+            throw ValidationException::withMessages(['role' => 'Tipo de cuenta temporalmente no disponible.']);
+        }
+        $user = DB::transaction(function () use ($data, $role) {
+            $user = User::create(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password'], 'role_id' => $role->id, 'is_active' => true]);
+            $this->audit('register', $user);
 
-        // Buscar el ID del rol seleccionado
-        $role = \App\Models\Role::where('name', $validated['role'])->first();
+            return $user;
+        });
+        Auth::login($user);
+        $request->session()->regenerate();
+        $request->session()->forget('registration_role');
+        event(new Registered($user));
 
-        // Crear el usuario
-        $user = \App\Models\User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-            'role_id' => $role ? $role->id : 3, // 3 es el ID por defecto de 'consulta'
-        ]);
-
-        // Iniciar sesión automáticamente
-        \Illuminate\Support\Facades\Auth::login($user);
-
-        // Bitácora
-        \App\Models\AuditLog::create([
-            'user_id' => $user->id,
-            'action' => 'register',
-            'table_name' => 'users',
-            'record_id' => $user->id,
-            'ip_address' => $request->ip(),
-        ]);
-
-        return redirect()->route('dashboard')->with('success', '¡Cuenta creada exitosamente! Bienvenido a InfoVehicular GT.');
+        return redirect()->route('dashboard');
     }
 
-    // Cerrar sesión
     public function logout(Request $request)
     {
-        // Registrar en la bitácora antes de salir
-        if (auth()->check()) {
-            AuditLog::create([
-                'user_id' => Auth::id(),
-                'action' => 'logout',
-                'table_name' => 'users',
-                'record_id' => Auth::id(),
-                'ip_address' => $request->ip(),
-            ]);
+        if ($request->user()) {
+            $this->audit('logout', $request->user());
         }
-
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect('/');
     }
 
-    // Redirigir al usuario a Google para autenticación
-    public function redirectToGoogle()
+    public function redirectToGoogle(Request $request)
     {
+        $choice = $request->session()->get('registration_role');
+        $request->session()->put('oauth_registration_role', in_array($choice, ['consulta', 'registro'], true) ? $choice : null);
+
         return Socialite::driver('google')->redirect();
     }
 
-    // Manejar el callback de Google después de la autenticación
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request)
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
-            
-            // Buscar usuario por email o google_id
-            $user = User::where('email', $googleUser->getEmail())->first();
-
-            if (!$user) {
-                // Si no existe, lo creamos con rol de 'consulta' por defecto
-                $consultaRole = Role::where('name', 'consulta')->first();
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'password' => bcrypt('usuario_google'),
-                    'role_id' => $consultaRole->id,
-                ]);
-            } elseif (!$user->google_id) {
-                // Si existe pero no tiene google_id, lo vinculamos
-                $user->update(['google_id' => $googleUser->getId()]);
+            // Socialite validates OAuth state against the session.
+            $google = Socialite::driver('google')->user();
+            $choice = $request->session()->pull('oauth_registration_role');
+            if (($google->user['email_verified'] ?? false) !== true || ! $google->getEmail() || ! $google->getId()) {
+                throw new \RuntimeException('Identidad no verificada.');
             }
+            $user = DB::transaction(function () use ($google, $choice) {
+                $user = User::where('google_id', $google->getId())->orWhere('email', $google->getEmail())->lockForUpdate()->first();
+                if ($user) {
+                    if (! $user->is_active || ! $user->role || ($user->google_id && $user->google_id !== $google->getId()) || strcasecmp($user->email, $google->getEmail()) !== 0) {
+                        throw new \RuntimeException('Cuenta no disponible.');
+                    }
+                } else {
+                    if (! in_array($choice, ['consulta', 'registro'], true)) {
+                        throw new \RuntimeException('Selecciona el tipo de cuenta.');
+                    }
+                    $role = Role::where('name', $choice)->firstOrFail();
+                    $user = new User(['name' => $google->getName() ?: 'Usuario', 'email' => $google->getEmail(), 'password' => Str::random(64), 'role_id' => $role->id, 'is_active' => true]);
+                }
+                $user->google_id = $google->getId();
+                $user->email_verified_at ??= now();
+                $user->save();
+                $this->audit('login_google', $user);
 
+                return $user;
+            });
             Auth::login($user);
+            $request->session()->regenerate();
+            $request->session()->forget('registration_role');
 
-            // Bitácora de login con Google
-            AuditLog::create([
-                'user_id' => $user->id,
-                'action' => 'login_google',
-                'table_name' => 'users',
-                'record_id' => $user->id,
-                'ip_address' => request()->ip(),
-            ]);
-
-            return redirect()->intended(route('dashboard'));
-
+            return redirect()->route('dashboard');
         } catch (\Exception $e) {
-            return redirect()->route('login')->withErrors('Error al iniciar sesión con Google.');
+            return redirect()->route('login')->withErrors(['email' => 'No se pudo verificar la cuenta con Google. Reintenta desde el tipo de cuenta elegido.']);
         }
+    }
+
+    private function audit(string $action, User $user): void
+    {
+        AuditLog::create(['user_id' => $user->id, 'action' => $action, 'table_name' => 'users', 'record_id' => $user->id, 'ip_address' => request()->ip()]);
     }
 }

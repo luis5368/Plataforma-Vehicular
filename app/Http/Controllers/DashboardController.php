@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Vehicle;
-use App\Models\TheftReport;
 use App\Models\Consultation;
-use App\Models\AuditLog;
+use App\Models\TheftReport;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -15,11 +13,14 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
-        
+        if ($user->role?->name === 'registro') {
+            return view('dashboard.registro', ['count' => $user->registeredVehicles()->count()]);
+        }
+
         // Estadísticas generales
         $stats = [
             'total_vehicles' => Vehicle::count(),
-            'active_reports' => TheftReport::where('status', 'activo')->count(),
+            'active_reports' => TheftReport::where('status', 'validado')->count(),
             'resolved_reports' => TheftReport::where('status', 'resuelto')->count(),
             'total_consultations' => Consultation::count(),
             'total_users' => User::count(),
@@ -29,7 +30,7 @@ class DashboardController extends Controller
         // Top 5 Departamentos con más robos
         $topDepartments = DB::table('vehicles')
             ->join('theft_reports', 'vehicles.id', '=', 'theft_reports.vehicle_id')
-            ->where('theft_reports.status', 'activo')
+            ->where('theft_reports.status', 'validado')
             ->select('vehicles.department', DB::raw('count(*) as total'))
             ->groupBy('vehicles.department')
             ->orderByDesc('total')
@@ -39,7 +40,7 @@ class DashboardController extends Controller
         // Top 5 Municipios con más robos
         $topMunicipalities = DB::table('vehicles')
             ->join('theft_reports', 'vehicles.id', '=', 'theft_reports.vehicle_id')
-            ->where('theft_reports.status', 'activo')
+            ->where('theft_reports.status', 'validado')
             ->select('vehicles.municipality', 'vehicles.department', DB::raw('count(*) as total'))
             ->groupBy('vehicles.municipality', 'vehicles.department')
             ->orderByDesc('total')
@@ -49,7 +50,7 @@ class DashboardController extends Controller
         // Distribución por zonas (solo Guatemala departamento)
         $zoneDistribution = DB::table('vehicles')
             ->join('theft_reports', 'vehicles.id', '=', 'theft_reports.vehicle_id')
-            ->where('theft_reports.status', 'activo')
+            ->where('theft_reports.status', 'validado')
             ->where('vehicles.department', 'Guatemala')
             ->select('vehicles.zone', DB::raw('count(*) as total'))
             ->groupBy('vehicles.zone')
@@ -57,20 +58,13 @@ class DashboardController extends Controller
             ->get();
 
         // Tendencia mensual de robos (últimos 6 meses)
-        $monthlyTrend = DB::table('theft_reports')
-            ->select(
-                DB::raw("DATE_FORMAT(report_date, '%Y-%m') as month"),
-                DB::raw('count(*) as total')
-            )
-            ->where('report_date', '>=', now()->subMonths(6))
-            ->groupBy(DB::raw("DATE_FORMAT(report_date, '%Y-%m')"))
-            ->orderBy('month')
-            ->get();
-
+        $monthlyTrend = TheftReport::where('report_date', '>=', now()->subMonths(6))->get()
+            ->groupBy(fn ($r) => $r->report_date->format('Y-m'))
+            ->map(fn ($rows, $month) => (object) ['month' => $month, 'total' => $rows->count()])->values();
         // Marcas más robadas
         $topBrands = DB::table('vehicles')
             ->join('theft_reports', 'vehicles.id', '=', 'theft_reports.vehicle_id')
-            ->where('theft_reports.status', 'activo')
+            ->where('theft_reports.status', 'validado')
             ->select('vehicles.brand', DB::raw('count(*) as total'))
             ->groupBy('vehicles.brand')
             ->orderByDesc('total')

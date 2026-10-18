@@ -10,6 +10,7 @@
         <div class="card-body">
             <form action="{{ route('admin.usuarios.update', $usuario->id) }}" method="POST">
                 @csrf
+<label for="is_active" class="form-label">Estado de la cuenta</label><select id="is_active" name="is_active" class="form-select mb-3"><option value="1" @selected($usuario->is_active)>Activa</option><option value="0" @selected(!$usuario->is_active)>Desactivada</option></select>
                 @method('PUT')
                 
                 <div class="mb-3">

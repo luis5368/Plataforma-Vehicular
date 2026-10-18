@@ -44,7 +44,7 @@
             vertical-align: middle;
         }
     </style>
-</head>
+<link rel="stylesheet" href="{{ asset('css/platform.css') }}"></head>
 <body>
 
     <!-- Barra de Navegación Superior -->
@@ -62,7 +62,7 @@
                         <span class="nav-link text-white">
                             <i class="bi bi-person-circle"></i> 
                             {{ auth()->user()->name }} 
-                            <span class="badge bg-light text-primary">{{ ucfirst(auth()->user()->role->name) }}</span>
+                            <span class="badge bg-light text-primary">{{ ucfirst(auth()->user()->role?->name ?? 'Sin rol') }}</span>
                         </span>
                     </li>
                     <li class="nav-item">
@@ -81,7 +81,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar / Menú Lateral -->
-            <nav class="col-md-2 d-none d-md-block sidebar py-3">
+            <nav class="col-md-2 sidebar py-3">
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
                         <li class="nav-item">
@@ -90,7 +90,7 @@
                             </a>
                         </li>
 
-                        @if(auth()->user()->role->name === 'admin' || auth()->user()->role->name === 'registro')
+                        @if(auth()->user()->role?->name === 'admin' || auth()->user()->role?->name === 'registro')
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('vehiculos.*') ? 'active' : '' }}" href="{{ route('vehiculos.index') }}">
                                 <i class="bi bi-car-front"></i> Vehículos
@@ -103,6 +103,7 @@
                         </li>
                         @endif
 
+                        @if(in_array(auth()->user()->role?->name, ['admin','consulta']))
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('consultar.*') ? 'active' : '' }}" href="{{ route('consultar.index') }}">
                                 <i class="bi bi-search"></i> Consultar VIN
@@ -121,9 +122,10 @@
                             </a>
                         </li>
 
-                        @if(auth()->user()->role->name === 'admin')
+                        @endif
+                        @if(auth()->user()->role?->name === 'admin')
                         <li class="nav-item mt-3">
-                            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 text-muted text-uppercase">
+                            <a class="nav-link" href="{{ route('admin.roles.index') }}">Roles y permisos</a><h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 text-muted text-uppercase">
                                 <span>Administración</span>
                             </h6>
                         </li>
@@ -158,7 +160,9 @@
                     </div>
                 @endif
 
+                @isset($header)<div class="mb-4">{{ $header }}</div>@endisset
                 @yield('content')
+                {{ $slot ?? '' }}
             </main>
         </div>
     </div>

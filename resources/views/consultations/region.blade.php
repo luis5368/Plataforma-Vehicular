@@ -62,7 +62,7 @@
                         <tbody>
                             @foreach($vehicles as $v)
                             <tr>
-                                <td><code class="small">{{ Str::limit($v->vin, 12, '...') }}</code></td>
+                                <td><code class="small">{{ $v->vin }}</code></td>
                                 <td><strong>{{ $v->plate }}</strong></td>
                                 <td><small>{{ $v->municipality }}, {{ $v->zone }}</small></td>
                                 <td><small>{{ \Carbon\Carbon::parse($v->theftReport->report_date)->format('d/m/y') }}</small></td>  
@@ -72,7 +72,7 @@
                     </table>
                     @else
                     <div class="p-4 text-center text-muted">
-                        No hay reportes activos con estos filtros.
+                        No hay reportes validados con estos filtros.
                     </div>
                     @endif
                 </div>
@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Datos inyectados desde Laravel
     var locations = @json($mapData);
+    const escapeHtml = value => {const span=document.createElement('span');span.textContent=value ?? '';return span.innerHTML;};
 
     if (locations.length > 0) {
         var bounds = [];
@@ -113,16 +114,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if(loc.lat && loc.lng) {
                 var marker = L.marker([loc.lat, loc.lng]).addTo(map);
                 marker.bindPopup(`
-                    <b>Placa:</b> ${loc.plate}<br>
-                    <b>Vehículo:</b> ${loc.brand}<br>
-                    <b>Dirección:</b> ${loc.address}<br>
-                    <b>Detalles:</b> ${loc.desc}
+                    <b>Placa:</b> ${escapeHtml(loc.plate )}<br>
+                    <b>Vehículo:</b> ${escapeHtml(loc.brand )}<br>
+                    <b>Dirección:</b> ${escapeHtml(loc.address )}<br>
+                    <b>Detalles:</b> ${escapeHtml(loc.desc)}
                 `);
                 bounds.push([loc.lat, loc.lng]);
             }
         });
         // Ajustar el mapa para que se vean todos los pines
-        map.fitBounds(bounds, { padding: [50, 50] });
+        if (bounds.length) map.fitBounds(bounds, { padding: [50, 50] });
     }
 });
 </script>

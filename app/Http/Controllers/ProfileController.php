@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\AuditLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -48,9 +50,20 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        if ($user->role?->name !== 'admin') {
+            abort_if($user->registeredVehicles()->whereHas('theftReport', fn ($q) => $q->where('reported_by', '!=', $user->id))->exists(), 403,
+                'La cuenta tiene vehículos con reportes de otra persona. Solicita la desactivación a administración.');
+        }
+
         Auth::logout();
 
-        $user->delete();
+        DB::transaction(function () use ($user, $request) {
+            foreach ($user->registeredVehicles()->with('theftReport')->get() as $vehicle) {
+                AuditLog::create(['user_id' => $user->id, 'action' => 'delete_with_account', 'table_name' => 'vehicles', 'record_id' => $vehicle->id, 'old_values' => $vehicle->toArray(), 'ip_address' => $request->ip()]);
+            }
+            AuditLog::create(['user_id' => $user->id, 'action' => 'delete_account', 'table_name' => 'users', 'record_id' => $user->id, 'old_values' => $user->toArray(), 'ip_address' => $request->ip()]);
+            $user->delete();
+        });
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

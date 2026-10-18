@@ -16,9 +16,9 @@
         </div>
     </div>
 
-    @if($vehiculo->theftReport && $vehiculo->theftReport->status === 'activo')
+    @if($vehiculo->theftReport)
     <div class="alert alert-danger border-2 shadow-sm mb-4">
-        <h4><i class="bi bi-exclamation-triangle"></i> VEHÍCULO CON REPORTE DE ROBO ACTIVO</h4>
+        <h4><x-report-status :status="$vehiculo->theftReport->status" /></h4>
         <p><strong>Fecha:</strong> {{ $vehiculo->theftReport->report_date->format('d/m/Y') }}</p>
         <p><strong>Descripción:</strong> {{ $vehiculo->theftReport->description }}</p>
     </div>

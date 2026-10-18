@@ -6,6 +6,9 @@
 <div class="container py-4">
     <h2 class="mb-4"><i class="bi bi-pencil"></i> Editar Vehículo</h2>
     
+    <form action="{{ route('vehiculos.update', $vehiculo->id) }}" method="POST">
+        @csrf
+        @method('PUT')
     <!-- ========================================== -->
 <!-- SECCIÓN DEL MAPA INTERACTIVO (Leaflet.js) -->
 <!-- ========================================== -->
@@ -15,7 +18,7 @@
     <div class="mb-3">
         <label for="theft_report_address" class="form-label">Dirección o Referencia (Opcional)</label>
         <input type="text" class="form-control" id="theft_report_address" name="theft_report_address" 
-               value="{{ old('theft_report_address') }}" placeholder="Ej: Frente al Centro Comercial Oakland, Zona 10">
+               value="{{ old('theft_report_address', $vehiculo->theft_report_address) }}" placeholder="Ej: Frente al Centro Comercial Oakland, Zona 10">
     </div>
 
     <p class="small text-muted mb-2">Haz clic en el mapa para marcar la ubicación exacta, o usa el buscador.</p>
@@ -24,8 +27,8 @@
     <div id="map" style="height: 350px; width: 100%; border-radius: 8px; border: 2px solid #dee2e6;"></div>
     
     <!-- Campos ocultos para enviar las coordenadas a Laravel -->
-    <input type="hidden" id="theft_latitude" name="theft_latitude" value="{{ old('theft_latitude') }}">
-    <input type="hidden" id="theft_longitude" name="theft_longitude" value="{{ old('theft_longitude') }}">
+    <input type="hidden" id="theft_latitude" name="theft_latitude" value="{{ old('theft_latitude', $vehiculo->theft_latitude) }}">
+    <input type="hidden" id="theft_longitude" name="theft_longitude" value="{{ old('theft_longitude', $vehiculo->theft_longitude) }}">
     
     <div class="mt-2">
         <small class="text-primary fw-bold">
@@ -108,9 +111,6 @@
     }
 </script>
 
-    <form action="{{ route('vehiculos.update', $vehiculo->id) }}" method="POST">
-        @csrf
-        @method('PUT')
         
         <div class="row">
             <div class="col-md-6 mb-3">
@@ -165,17 +165,15 @@
             </div>
         </div>
 
-        <div class="mb-3">
-            <label for="theft_report_address" class="form-label">Dirección del Reporte de Robo</label>
-            <input type="text" class="form-control" id="theft_report_address" name="theft_report_address" 
-                   value="{{ old('theft_report_address', $vehiculo->theft_report_address) }}">
-        </div>
+
 
         <div class="mb-3">
             <label for="observations" class="form-label">Observaciones</label>
             <textarea class="form-control" id="observations" name="observations" rows="4">{{ old('observations', $vehiculo->observations) }}</textarea>
         </div>
 
+<div class="row">@foreach(['department'=>'Departamento','municipality'=>'Municipio','zone'=>'Zona'] as $field=>$label)<div class="col-md-4 mb-3"><label class="form-label" for="{{ $field }}">{{ $label }}</label><input class="form-control" id="{{ $field }}" name="{{ $field }}" value="{{ old($field, $vehiculo->$field) }}" maxlength="100" @required($field !== 'zone')></div>@endforeach</div>
+        @include('vehicles.report-fields')
         <button type="submit" class="btn btn-primary">
             <i class="bi bi-save"></i> Guardar Cambios
         </button>

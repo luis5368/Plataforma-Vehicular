@@ -125,10 +125,7 @@
                     </div>
                     <div class="col-md-6 mb-3">
                         <label for="theft_report_status" class="form-label">Estado del Reporte *</label>
-                        <select class="form-select" id="theft_report_status" name="theft_report_status">
-                            <option value="activo" {{ old('theft_report_status') == 'activo' ? 'selected' : '' }}>Activo</option>
-                            <option value="resuelto" {{ old('theft_report_status') == 'resuelto' ? 'selected' : '' }}>Resuelto / Recuperado</option>
-                        </select>
+                        <input type="hidden" id="theft_report_status" name="theft_report_status" value="pendiente_validacion"><p class="text-secondary">El reporte se guardará como pendiente de validación.</p>
                     </div>
                 </div>
 
@@ -265,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Limpiar campos
             theftDate.value = '';
             theftDesc.value = '';
-            document.getElementById('theft_report_status').value = 'activo';
+            document.getElementById('theft_report_status').value = 'pendiente_validacion';
             document.getElementById('theft_report_address').value = '';
             document.getElementById('theft_latitude').value = '';
             document.getElementById('theft_longitude').value = '';

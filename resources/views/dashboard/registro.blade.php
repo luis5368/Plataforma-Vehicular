@@ -1,0 +1,2 @@
+@extends('layouts.app')
+@section('content')<div class="card p-4"><span class="eyebrow">REGISTRO</span><h1 class="h2 mt-3">Tu espacio de registro</h1><p class="text-secondary">Administra los vehículos que has creado. Los reportes nuevos se publican como pendientes de validación.</p><p class="fs-3">{{ $count }} vehículos registrados por ti</p><div><a class="btn btn-primary" href="{{ route('vehiculos.create') }}">Registrar vehículo o reporte</a> <a class="btn btn-outline-primary" href="{{ route('vehiculos.index') }}">Mis vehículos</a></div></div>@endsection

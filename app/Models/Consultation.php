@@ -1,12 +1,15 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Consultation extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'vehicle_id', 'consultation_date', 'result', 'ip_address'];
+
+    protected $fillable = ['user_id', 'vehicle_id', 'consultation_date', 'result', 'ip_address', 'search_value'];
 
     protected $casts = [
         'consultation_date' => 'datetime',

@@ -26,7 +26,7 @@
                         @foreach($consultations as $c)
                         <tr>
                             <td>{{ $c->consultation_date->format('d/m/Y H:i') }}</td>
-                            <td><code class="small">{{ $c->vehicle->vin ?? 'N/A' }}</code></td>
+                            <td><code class="small">{{ $c->vehicle->vin ?? $c->search_value ?? 'N/A' }}</code></td>
                             <td><strong>{{ $c->vehicle->plate ?? 'N/A' }}</strong></td>
                             <td>
                                 @if($c->vehicle)
@@ -36,17 +36,7 @@
                                 @endif
                             </td>
                             <td>
-                                @if($c->result === 'con_reporte_activo')
-                                    <span class="badge bg-danger">
-                                        <i class="bi bi-exclamation-triangle"></i> Con Reporte
-                                    </span>
-                                @elseif($c->result === 'sin_reporte')
-                                    <span class="badge bg-success">
-                                        <i class="bi bi-check-circle"></i> Sin Reportes
-                                    </span>
-                                @else
-                                    <span class="badge bg-secondary">No Encontrado</span>
-                                @endif
+                                <x-report-status :status="$c->result" />
                             </td>
                         </tr>
                         @endforeach

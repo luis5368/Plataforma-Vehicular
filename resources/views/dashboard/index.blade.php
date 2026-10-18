@@ -6,7 +6,7 @@
 <div class="container-fluid py-4">
     <h2 class="mb-4">
         <i class="bi bi-speedometer2"></i> Panel de Control
-        <span class="badge bg-primary ms-2">{{ ucfirst($user->role->name) }}</span>
+        <span class="badge bg-primary ms-2">{{ ucfirst($user->role?->name) }}</span>
     </h2>
 
     <!-- Tarjetas de Estadísticas Generales -->
@@ -214,7 +214,7 @@
                 <div class="card-body">
                     <h5 class="card-title">Acciones Rápidas</h5>
                     <div class="d-flex flex-wrap gap-2">
-                        @if(auth()->user()->role->name === 'admin' || auth()->user()->role->name === 'registro')
+                        @if(auth()->user()->role?->name === 'admin' || auth()->user()->role?->name === 'registro')
                             <a href="{{ route('vehiculos.create') }}" class="btn btn-success btn-lg">
                                 <i class="bi bi-plus-circle"></i> Registrar Vehículo
                             </a>

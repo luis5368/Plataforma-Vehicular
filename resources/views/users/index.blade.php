@@ -28,15 +28,15 @@
                         @foreach($users as $user)
                         <tr>
                             <td>{{ $user->name }}</td>
-                            <td>{{ $user->email }}</td>
-                            <td><span class="badge bg-info text-dark">{{ ucfirst($user->role->name) }}</span></td>
+                            <td>{{ $user->email }} <span class="badge bg-secondary">{{ $user->is_active ? "Activa" : "Desactivada" }}</span></td>
+                            <td><span class="badge bg-info text-dark">{{ ucfirst($user->role?->name) }}</span></td>
                             <td>{{ $user->created_at->format('d/m/Y') }}</td>
                             <td>
                                 <a href="{{ route('admin.usuarios.edit', $user->id) }}" class="btn btn-sm btn-warning">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 @if($user->id !== auth()->id())
-                                <form action="{{ route('admin.usuarios.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar este usuario?');">
+                                <form action="{{ route('admin.usuarios.destroy', $user->id) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Desactivar este usuario?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger">

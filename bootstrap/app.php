@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\ActiveAccount;
+use App\Http\Middleware\CheckRole;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,7 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Aquí registramos el alias 'role' para usarlo en las rutas
         $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
+            'active' => ActiveAccount::class,
+            'role' => CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

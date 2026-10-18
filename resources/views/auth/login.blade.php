@@ -15,7 +15,7 @@
             background-color: #f8f9fa;
         }
     </style>
-</head>
+<link rel="stylesheet" href="{{ asset('css/platform.css') }}"></head>
 <body class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
 
     <div class="card shadow-sm border-0" style="width: 100%; max-width: 450px;">
@@ -99,7 +99,7 @@
                         <i class="bi bi-box-arrow-in-right"></i> Ingresar al Sistema
                     </button>
                 </div>
-            </form>
+            </form><p class="mt-3 mb-0 text-center"><a href="{{ route('register.choice') }}">Crear una cuenta</a></p>
 
             <!-- Separador -->
             <hr class="my-4">

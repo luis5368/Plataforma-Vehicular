@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Consultation;
 use App\Models\TheftReport;
-use App\Models\Vehicle;
+use App\Services\ReportAnalytics;
 use App\Support\VehicleSearch;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +36,7 @@ class ConsultationController extends Controller
             $theftReport = TheftReport::where('vehicle_id', $vehicle->id)
                 ->first();
 
-            $result = $theftReport?->status ?? 'sin_reporte';
+            $result = $theftReport?->displayStatus() ?? 'sin_reporte';
         }
 
         // 1. Registrar la consulta en el historial del usuario
@@ -96,38 +97,19 @@ class ConsultationController extends Controller
      */
     public function region(Request $request)
     {
-        $request->validate(['department' => 'nullable|string|max:100', 'municipality' => 'nullable|string|max:100', 'zone' => 'nullable|string|max:50']);
-        // Iniciar la query base: solo vehículos que tengan reporte de robo activo
-        $query = Vehicle::whereHas('theftReport', function ($q) {
-            $q->where('status', 'validado');
-        })->with('theftReport');
+        $analytics = app(ReportAnalytics::class);
+        $filters = $analytics->filters($request);
+        try {
+            $vehicles = $analytics->vehicles($filters)->whereHas('theftReport', fn ($q) => $q->active())->with('theftReport')->latest()->get();
+            $mapData = $vehicles->filter(fn ($v) => $v->theft_latitude !== null && $v->theft_longitude !== null)->map(fn ($v) => [
+                'lat' => $v->theft_latitude, 'lng' => $v->theft_longitude, 'vin' => $v->vin, 'plate' => $v->plate,
+                'brand' => $v->brand.' '.$v->model, 'address' => $v->theft_report_address,
+                'desc' => $v->theftReport->sourceLabel(),
+            ])->values();
 
-        // Aplicar filtros solo si el usuario los seleccionó
-        if ($request->filled('department')) {
-            $query->where('department', $request->department);
+            return view('consultations.region', $analytics->dashboard($filters) + compact('vehicles', 'mapData', 'filters'));
+        } catch (QueryException $exception) {
+            return response()->view('reports.unavailable', [], 503);
         }
-        if ($request->filled('municipality')) {
-            $query->where('municipality', $request->municipality);
-        }
-        if ($request->filled('zone')) {
-            $query->where('zone', 'like', '%'.$request->zone.'%');
-        }
-
-        // Obtener resultados
-        $vehicles = $query->orderBy('created_at', 'desc')->get();
-
-        // Preparar datos para el mapa (JSON)
-        $mapData = $vehicles->map(function ($v) {
-            return [
-                'lat' => $v->theft_latitude,
-                'lng' => $v->theft_longitude,
-                'plate' => $v->plate,
-                'brand' => $v->brand.' '.$v->model,
-                'address' => $v->theft_report_address,
-                'desc' => $v->theftReport->description ?? 'Sin descripción',
-            ];
-        });
-
-        return view('consultations.region', compact('vehicles', 'mapData'));
     }
 }

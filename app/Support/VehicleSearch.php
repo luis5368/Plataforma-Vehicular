@@ -23,10 +23,11 @@ class VehicleSearch
             'plate' => ['nullable', 'required_without:vin', 'regex:/^[A-Z]{1,2}[0-9]{3}[A-Z]{3}$/'],
             'department' => 'nullable|string|max:100',
             'municipality' => 'nullable|string|max:100',
+            'zone' => 'nullable|string|max:50',
         ]);
 
         return Vehicle::with('theftReport')->where($request->filled('vin') ? 'vin' : 'plate', $request->filled('vin') ? $request->vin : $request->plate)
             ->when($request->filled('department'), fn ($q) => $q->where('department', $request->department))
-            ->when($request->filled('municipality'), fn ($q) => $q->where('municipality', $request->municipality))->first();
+            ->when($request->filled('municipality'), fn ($q) => $q->where('municipality', $request->municipality))->when($request->filled('zone'), fn ($q) => $q->where('zone', $request->zone))->first();
     }
 }

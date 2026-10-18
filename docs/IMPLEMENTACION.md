@@ -1,5 +1,11 @@
 # Mejoras de Plataforma Vehicular
 
+El tema visual actual se documenta en [Diseño visual](DISENO_VISUAL.md). La fuente de estilos ahora es `resources/css/platform.css`, compilada con Vite, en sustitución de la antigua hoja pública.
+
+**Actualización del flujo de reportes:** la nueva validación automática y la separación entre revisión y estado del caso sustituyen las reglas de reportes descritas originalmente más abajo. Consulta [Reportes automáticos](REPORTES_AUTOMATICOS.md) para el mapeo, diagnóstico histórico y habilitación manual.
+
+Para configurar SMTP, localizar enlaces en modo `log` y verificar una cuenta administradora existente, consulta [Correo y verificación](CORREO.md). No requiere cambios manuales a usuarios ni migraciones adicionales.
+
 ## Preparación y activación
 
 1. Conserva un respaldo de la base existente y configura la conexión en `.env`.

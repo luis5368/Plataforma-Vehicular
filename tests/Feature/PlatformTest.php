@@ -28,6 +28,7 @@ class PlatformTest extends TestCase
     {
         return ['vin' => '1HGCM82633A000001', 'plate' => 'P100AAA', 'brand' => 'Toyota', 'model' => 'Hilux',
             'department' => 'Guatemala', 'municipality' => 'Guatemala', 'has_theft_report' => '1',
+            'theft_report_address' => 'Referencia de ubicación', 'evidence_reference' => 'DOC-TEST-1',
             'theft_report_date' => '2026-01-01', 'theft_description' => 'Private description', 'theft_report_status' => 'validado'];
     }
 
@@ -67,7 +68,7 @@ class PlatformTest extends TestCase
         $other = $this->account('registro');
         $this->actingAs($owner)->post('/vehiculos', $this->payload())->assertRedirect();
         $vehicle = Vehicle::firstOrFail();
-        $this->assertSame('pendiente_validacion', $vehicle->theftReport->status);
+        $this->assertSame('validado', $vehicle->theftReport->status);
         $this->actingAs($other)->get('/vehiculos/'.$vehicle->id.'/edit')->assertForbidden();
         $this->put('/vehiculos/'.$vehicle->id, $this->payload())->assertForbidden();
         $this->delete('/vehiculos/'.$vehicle->id)->assertForbidden();
@@ -84,7 +85,9 @@ class PlatformTest extends TestCase
         $this->post('/logout');
         $vehicle = Vehicle::firstOrFail();
         foreach (['pendiente_validacion' => 'Pendiente de validación: no confirmado', 'validado' => 'Reporte validado', 'resuelto' => 'Reporte resuelto', 'rechazado' => 'Reporte rechazado'] as $state => $label) {
-            $vehicle->theftReport->update(['status' => $state]);
+            $vehicle->theftReport->forceFill(['status' => $state, 'validation_status' => match ($state) {
+                'validado' => 'validado','rechazado' => 'rechazado',default => 'pendiente'
+            }, 'case_status' => $state === 'resuelto' ? 'resuelto' : 'abierto'])->save();
             $this->post('/consulta-publica', ['vin' => ' 1hgcm82633a000001 '])->assertOk()
                 ->assertSee($label)->assertDontSee('Private description')->assertDontSee($owner->email)->assertDontSee($owner->name);
         }
@@ -111,10 +114,10 @@ class PlatformTest extends TestCase
         $this->post('/vehiculos', $this->payload())->assertSessionHasErrors(['vin', 'plate']);
         $v = Vehicle::firstOrFail();
         $admin = $this->account('admin');
-        foreach (['validado' => 'reportado', 'rechazado' => 'activo', 'resuelto' => 'activo', 'pendiente_validacion' => 'reportado'] as $state => $expected) {
-            $this->actingAs($admin)->put('/vehiculos/'.$v->id, array_replace($this->payload(), ['theft_report_status' => $state]))->assertRedirect();
+        foreach (['validar' => 'reportado', 'invalidar' => 'activo', 'resolver' => 'activo', 'reabrir' => 'activo'] as $action => $expected) {
+            $this->actingAs($admin)->put('/vehiculos/'.$v->id, array_replace($this->payload(), ['review_action' => $action, 'review_reason' => 'Prueba de decisión administrativa']))->assertRedirect();
             $this->assertSame($expected, $v->fresh()->status);
-            $this->assertSame($state, $v->fresh()->theftReport->status);
+            $this->assertSame($action === 'validar' ? 'validado' : ($action === 'resolver' ? 'resuelto' : 'rechazado'), $v->fresh()->theftReport->displayStatus());
         }
         $this->actingAs($owner)->delete('/vehiculos/'.$v->id)->assertRedirect();
         $this->assertDatabaseCount('theft_reports', 0);
@@ -183,19 +186,19 @@ class PlatformTest extends TestCase
         $this->assertSame('linked', $user->fresh()->google_id);
     }
 
-    public function test_editing_validated_report_requires_new_review_and_withdrawal_preserves_audit(): void
+    public function test_editing_validated_report_revalidates_integrity_and_withdrawal_preserves_audit(): void
     {
         $owner = $this->account('registro');
         $this->actingAs($owner)->post('/vehiculos', $this->payload());
         $v = Vehicle::firstOrFail();
-        $v->theftReport->update(['status' => 'validado']);
+        $v->theftReport->forceFill(['status' => 'validado'])->save();
         $this->put('/vehiculos/'.$v->id, array_replace($this->payload(), ['theft_description' => 'Changed details']))->assertRedirect();
-        $this->assertSame('pendiente_validacion', $v->fresh()->theftReport->status);
+        $this->assertSame('validado', $v->fresh()->theftReport->status);
         $this->get('/vehiculos/'.$v->id.'/edit')->assertOk()->assertSee('name="department"', false)->assertSee('Changed details');
         $data = $this->payload();
         unset($data['has_theft_report']);
         $this->put('/vehiculos/'.$v->id, $data)->assertRedirect();
-        $this->assertNull($v->fresh()->theftReport);
+        $this->assertSame('retirado', $v->fresh()->theftReport->case_status);
         $this->assertSame('activo', $v->fresh()->status);
         $this->assertDatabaseHas('audit_logs', ['action' => 'withdraw_report']);
     }
@@ -233,7 +236,7 @@ class PlatformTest extends TestCase
         $v = Vehicle::create(array_merge(collect($this->payload())->only(['vin', 'plate', 'brand', 'model', 'department', 'municipality'])->all(), [
             'vin' => '1hgcm82633a000001', 'plate' => 'P-100 AAA', 'registered_by' => $owner->id, 'status' => 'activo',
         ]));
-        TheftReport::create(['vehicle_id' => $v->id, 'reported_by' => $owner->id, 'status' => 'activo', 'report_date' => '2026-01-01', 'description' => 'Legacy unreviewed']);
+        TheftReport::forceCreate(['vehicle_id' => $v->id, 'reported_by' => $owner->id, 'status' => 'activo', 'report_date' => '2026-01-01', 'description' => 'Legacy unreviewed']);
         $migration->up();
         $this->assertSame('1HGCM82633A000001', $v->fresh()->vin);
         $this->assertSame('P100AAA', $v->fresh()->plate);

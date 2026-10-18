@@ -1,67 +1,31 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'InfoVehicular GT')</title>
-    
-    <!-- Bootstrap 5.3 CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons CDN (Versión actualizada y estable) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-    <style>
-        body { background-color: #f8f9fa; }
-        .navbar-brand { font-weight: bold; }
-        .sidebar { min-height: calc(100vh - 56px); background-color: #343a40; }
-        .sidebar .nav-link { color: #adb5bd; padding: 12px 20px; }
-        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: #fff; background-color: #495057; }
-        .content-wrapper { padding: 20px; }
 
-        /* ========================================== */
-        /* CORRECCIÓN PARA ÍCONOS GIGANTES (PAGINACIÓN) */
-        /* ========================================== */
-        /* Forzar tamaño normal a todos los íconos de Bootstrap */
-        .bi, [class^="bi-"], [class*=" bi-"] {
-            display: inline-block;
-            width: 1em;
-            height: 1em;
-            vertical-align: -0.125em;
-            font-size: 1rem !important;
-        }
-
-        /* Corrección específica para los botones de paginación de Laravel */
-        .pagination .page-link .bi {
-            font-size: 1rem !important;
-            width: 1em !important;
-            height: 1em !important;
-        }
-
-        /* Asegurar que los íconos dentro de botones se vean bien */
-        .btn .bi {
-            vertical-align: middle;
-        }
-    </style>
-<link rel="stylesheet" href="{{ asset('css/platform.css') }}"></head>
-<body>
+    @include('layouts.assets')
+</head>
+<body class="app-page">
+<a class="skip-link" href="#main-content">Saltar al contenido</a>
 
     <!-- Barra de Navegación Superior -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ route('dashboard') }}">
-                <i class="bi bi-car-front-fill"></i> InfoVehicular GT
+                <x-brand :compact="true" />
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir menú de cuenta">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
                         <span class="nav-link text-white">
-                            <i class="bi bi-person-circle"></i> 
-                            {{ auth()->user()->name }} 
+                            <i class="bi bi-person-circle"></i>
+                            {{ auth()->user()->name }}
                             <span class="badge bg-light text-primary">{{ ucfirst(auth()->user()->role?->name ?? 'Sin rol') }}</span>
                         </span>
                     </li>
@@ -81,7 +45,7 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar / Menú Lateral -->
-            <nav class="col-md-2 sidebar py-3">
+            <nav class="col-md-2 sidebar py-3" aria-label="Navegación principal">
                 <div class="sidebar-sticky">
                     <ul class="nav flex-column">
                         <li class="nav-item">
@@ -125,7 +89,7 @@
                         @endif
                         @if(auth()->user()->role?->name === 'admin')
                         <li class="nav-item mt-3">
-                            <a class="nav-link" href="{{ route('admin.roles.index') }}">Roles y permisos</a><h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 text-muted text-uppercase">
+                            <a class="nav-link" href="{{ route('admin.roles.index') }}"><i class="bi bi-shield-lock" aria-hidden="true"></i> Roles y permisos</a><h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 text-muted text-uppercase">
                                 <span>Administración</span>
                             </h6>
                         </li>
@@ -145,7 +109,10 @@
             </nav>
 
             <!-- Contenido Principal -->
-            <main class="col-md-10 ms-sm-auto content-wrapper">
+            <main id="main-content" class="col-md-10 ms-sm-auto content-wrapper">
+                @if($errors->any())
+                    <div role="alert" class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>
+                @endif
                 @if(session('success'))
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         <i class="bi bi-check-circle"></i> {{ session('success') }}
@@ -160,6 +127,9 @@
                     </div>
                 @endif
 
+                @if(session('status') === 'email-verified')
+                    <div role="status" class="alert alert-success"><x-session-status-message :status="session('status')" /></div>
+                @endif
                 @isset($header)<div class="mb-4">{{ $header }}</div>@endisset
                 @yield('content')
                 {{ $slot ?? '' }}
@@ -168,7 +138,7 @@
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     @stack('scripts')
 </body>
 </html>

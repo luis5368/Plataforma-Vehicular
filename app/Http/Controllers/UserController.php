@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\VerificationMail;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -58,7 +59,9 @@ class UserController extends Controller
 
             return $user;
         });
-        event(new Registered($user));
+        if (! VerificationMail::dispatch(fn () => event(new Registered($user)), $user->id)) {
+            return redirect()->route('admin.usuarios.index')->with('error', 'La cuenta se creó. '.__('verification.failed', [], 'es'));
+        }
 
         return redirect()->route('admin.usuarios.index')->with('success', 'Usuario creado exitosamente.');
     }

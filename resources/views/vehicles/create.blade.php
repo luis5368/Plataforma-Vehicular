@@ -8,7 +8,7 @@
 
     <form action="{{ route('vehiculos.store') }}" method="POST">
         @csrf
-        
+
         <!-- 1. Información Básica del Vehículo -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white">
@@ -18,31 +18,31 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="vin" class="form-label fw-bold">VIN (Número de Identificación) *</label>
-                        <input type="text" class="form-control @error('vin') is-invalid @enderror" 
+                        <input type="text" class="form-control @error('vin') is-invalid @enderror"
                                id="vin" name="vin" maxlength="17" value="{{ old('vin') }}" required style="text-transform: uppercase;">
                         <small class="text-muted">17 caracteres alfanuméricos (sin I, O, Q)</small>
                         @error('vin') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    
+
                     <div class="col-md-6 mb-3">
                         <label for="plate" class="form-label fw-bold">Placa *</label>
-                        <input type="text" class="form-control @error('plate') is-invalid @enderror" 
+                        <input type="text" class="form-control @error('plate') is-invalid @enderror"
                                id="plate" name="plate" maxlength="20" value="{{ old('plate') }}" required style="text-transform: uppercase;">
                         @error('plate') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="brand" class="form-label">Marca *</label>
-                        <input type="text" class="form-control @error('brand') is-invalid @enderror" 
+                        <input type="text" class="form-control @error('brand') is-invalid @enderror"
                                id="brand" name="brand" value="{{ old('brand') }}" required>
                         @error('brand') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
-                    
+
                     <div class="col-md-6 mb-3">
                         <label for="model" class="form-label">Modelo *</label>
-                        <input type="text" class="form-control @error('model') is-invalid @enderror" 
+                        <input type="text" class="form-control @error('model') is-invalid @enderror"
                                id="model" name="model" value="{{ old('model') }}" required>
                         @error('model') <div class="invalid-feedback">{{ $message }}</div> @enderror
                     </div>
@@ -124,8 +124,8 @@
                         @error('theft_report_date') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="theft_report_status" class="form-label">Estado del Reporte *</label>
-                        <input type="hidden" id="theft_report_status" name="theft_report_status" value="pendiente_validacion"><p class="text-secondary">El reporte se guardará como pendiente de validación.</p>
+                        <label class="form-label">Estado del Reporte *</label>
+                        <p class="text-secondary">Validación automática de integridad en el servidor; no confirma el hecho.</p><label for="evidence_reference" class="form-label">Referencia documental / denuncia</label><input class="form-control" id="evidence_reference" name="evidence_reference" maxlength="255" value="{{ old('evidence_reference') }}"><p class="small">Referencia declarada; no adjunta ni verifica un documento.</p>
                     </div>
                 </div>
 
@@ -137,7 +137,7 @@
 
                 <div class="mb-3">
                     <label for="theft_report_address" class="form-label">Dirección o Referencia del Lugar</label>
-                    <input type="text" class="form-control" id="theft_report_address" name="theft_report_address" 
+                    <input type="text" class="form-control" id="theft_report_address" name="theft_report_address"
                            value="{{ old('theft_report_address') }}" placeholder="Ej: Frente al Centro Comercial Oakland, Zona 10">
                 </div>
 
@@ -145,13 +145,13 @@
                 <div class="mb-3">
                     <label class="form-label fw-bold">Ubicación Exacta en el Mapa</label>
                     <p class="small text-muted mb-2">Haz clic en el mapa para marcar la ubicación, o usa el buscador integrado (lupa).</p>
-                    
+
                     <div id="map" style="height: 350px; width: 100%; border-radius: 8px; border: 2px solid #dee2e6; z-index: 1;"></div>
-                    
+
                     <!-- Campos ocultos para enviar las coordenadas a Laravel -->
                     <input type="hidden" id="theft_latitude" name="theft_latitude" value="{{ old('theft_latitude') }}">
                     <input type="hidden" id="theft_longitude" name="theft_longitude" value="{{ old('theft_longitude') }}">
-                    
+
                     <div class="mt-2">
                         <small class="text-primary fw-bold">
                             Coordenadas: <span id="coords-display">{{ old('theft_latitude') && old('theft_longitude') ? old('theft_latitude').', '.old('theft_longitude') : 'No seleccionadas' }}</span>
@@ -165,11 +165,11 @@
         <div class="card shadow-sm mb-4">
             <div class="card-body">
                 <label for="observations" class="form-label fw-bold">Observaciones Adicionales</label>
-                <textarea class="form-control" id="observations" name="observations" rows="3" 
+                <textarea class="form-control" id="observations" name="observations" rows="3"
                           placeholder="Detalles adicionales sobre el estado, mecánica o historial del vehículo...">{{ old('observations') }}</textarea>
             </div>
         </div>
-        
+
         <!-- Botones de Acción -->
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary btn-lg">
@@ -249,25 +249,25 @@ document.addEventListener('DOMContentLoaded', function() {
             theftSection.style.display = 'block';
             theftDate.required = true;
             theftDesc.required = true;
-            
+
             // FIX CRUCIAL: Forzar a Leaflet a recalcular su tamaño al hacerse visible
             setTimeout(function(){ map.invalidateSize(); }, 200);
-            
+
             theftSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             theftSection.style.display = 'none';
             theftDate.required = false;
             theftDesc.required = false;
-            
+
             // Limpiar campos
             theftDate.value = '';
             theftDesc.value = '';
-            document.getElementById('theft_report_status').value = 'pendiente_validacion';
+
             document.getElementById('theft_report_address').value = '';
             document.getElementById('theft_latitude').value = '';
             document.getElementById('theft_longitude').value = '';
             document.getElementById('coords-display').innerText = 'No seleccionadas';
-            
+
             if (marker) {
                 map.removeLayer(marker);
                 marker = null;
@@ -299,9 +299,9 @@ const municipalitiesByDepartment = {
 function updateMunicipalities() {
     const department = document.getElementById('department').value;
     const municipalitySelect = document.getElementById('municipality');
-    
+
     municipalitySelect.innerHTML = '<option value="">Seleccione...</option>';
-    
+
     if (department && municipalitiesByDepartment[department]) {
         municipalitiesByDepartment[department].forEach(mun => {
             const option = document.createElement('option');

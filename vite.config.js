@@ -11,7 +11,7 @@ export default defineConfig({
         }),
 
     ],
-    css: { postcss: { plugins: [tailwindcss({content: ['./resources/**/*.blade.php','./resources/**/*.js','./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php'], theme: {extend: {}}, plugins: []}), autoprefixer()] } },
+    css: { postcss: { plugins: [tailwindcss({corePlugins: {preflight: false}, content: ['./resources/**/*.blade.php','./resources/**/*.js','./vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php'], theme: {extend: {}}, plugins: []}), autoprefixer()] } },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],

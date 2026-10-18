@@ -18,7 +18,7 @@
 
     @if($vehiculo->theftReport)
     <div class="alert alert-danger border-2 shadow-sm mb-4">
-        <h4><x-report-status :status="$vehiculo->theftReport->status" /></h4>
+        <h4><x-report-context :report="$vehiculo->theftReport" /></h4>
         <p><strong>Fecha:</strong> {{ $vehiculo->theftReport->report_date->format('d/m/Y') }}</p>
         <p><strong>Descripción:</strong> {{ $vehiculo->theftReport->description }}</p>
     </div>

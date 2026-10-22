@@ -69,7 +69,8 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
     Route::middleware(['role:admin,consulta'])->group(function () {
         Route::get('/consultar', [ConsultationController::class, 'index'])->name('consultar.index');
         Route::get('/consultar/buscar', [ConsultationController::class, 'buscar'])->name('consultar.buscar');
-        Route::get('/consulta-region', [ConsultationController::class, 'region'])->name('consultar.region');
+        Route::get('/consulta-region', [ConsultationController::class, 'region'])->middleware('throttle:regional-pages')->name('consultar.region');
+        Route::get('/consulta-region/puntos', [ConsultationController::class, 'map'])->middleware('throttle:regional-map')->name('consultar.region.map');
         Route::get('/historial', [ConsultationController::class, 'historial'])->name('consultar.historial');
     });
 
@@ -83,9 +84,9 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
 });
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::get('/verify-email', EmailVerificationPromptController::class)->name('verification.notice');
-    Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
-    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])->middleware('throttle:6,1')->name('verification.send');
+    Route::get('/verify-email', EmailVerificationPromptController::class)->middleware('active')->name('verification.notice');
+    Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)->middleware(['active', 'signed', 'throttle:6,1'])->name('verification.verify');
+    Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])->middleware(['active', 'throttle:6,1'])->name('verification.send');
 });
 
 Route::middleware(['auth', 'active'])->group(function () {

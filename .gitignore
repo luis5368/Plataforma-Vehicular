@@ -25,3 +25,4 @@ Thumbs.db
 
 /storage/framework/lsp-*.php
 /.work-*.cjs
+/storage/framework/production-audit/

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RegionalMapRequest;
 use App\Models\AuditLog;
 use App\Models\Consultation;
 use App\Models\TheftReport;
+use App\Services\RegionalMap;
 use App\Services\ReportAnalytics;
 use App\Support\VehicleSearch;
 use Illuminate\Database\QueryException;
@@ -100,16 +102,21 @@ class ConsultationController extends Controller
         $analytics = app(ReportAnalytics::class);
         $filters = $analytics->filters($request);
         try {
-            $vehicles = $analytics->vehicles($filters)->whereHas('theftReport', fn ($q) => $q->active())->with('theftReport')->latest()->get();
-            $mapData = $vehicles->filter(fn ($v) => $v->theft_latitude !== null && $v->theft_longitude !== null)->map(fn ($v) => [
-                'lat' => $v->theft_latitude, 'lng' => $v->theft_longitude, 'vin' => $v->vin, 'plate' => $v->plate,
-                'brand' => $v->brand.' '.$v->model, 'address' => $v->theft_report_address,
-                'desc' => $v->theftReport->sourceLabel(),
-            ])->values();
+            $vehicles = $analytics->activeVehicles($filters)->with('theftReport')->latest()->orderByDesc('id')->paginate(25)->withQueryString();
+            $mapBounds = app(RegionalMap::class)->initialBounds($analytics, $filters);
 
-            return view('consultations.region', $analytics->dashboard($filters) + compact('vehicles', 'mapData', 'filters'));
+            return view('consultations.region', $analytics->dashboard($filters) + compact('vehicles', 'filters', 'mapBounds'));
         } catch (QueryException $exception) {
             return response()->view('reports.unavailable', [], 503);
+        }
+    }
+
+    public function map(RegionalMapRequest $request, ReportAnalytics $analytics, RegionalMap $map)
+    {
+        try {
+            return response()->json($map->points($analytics, $analytics->filters($request), $request->validated()))->header('Cache-Control', 'no-store');
+        } catch (QueryException $exception) {
+            return response()->json(['message' => 'La consulta del mapa falló. Intenta nuevamente más tarde.'], 503)->header('Cache-Control', 'no-store');
         }
     }
 }

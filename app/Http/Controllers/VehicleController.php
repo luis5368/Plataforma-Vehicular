@@ -128,8 +128,14 @@ class VehicleController extends Controller
     public function destroy(Vehicle $vehiculo)
     {
         $this->authorizeOwner($vehiculo);
-        abort_unless(auth()->user()->role?->name === 'admin' || ! $vehiculo->theftReport || $vehiculo->theftReport->reported_by === auth()->id(), 403);
         DB::transaction(function () use ($vehiculo) {
+            $vehiculo = Vehicle::whereKey($vehiculo->id)->lockForUpdate()->firstOrFail();
+            $this->authorizeOwner($vehiculo);
+            $report = $vehiculo->theftReport()->lockForUpdate()->first();
+            if (auth()->user()->role?->name !== 'admin' && $report) {
+                abort_unless($report->reported_by === auth()->id() && $report->case_status === 'abierto', 403,
+                    'Solo puedes eliminar tus propios reportes abiertos.');
+            }
             $this->audit('delete', 'vehicles', $vehiculo->id, $vehiculo->load('theftReport')->toArray(), null);
             $vehiculo->delete();
         });

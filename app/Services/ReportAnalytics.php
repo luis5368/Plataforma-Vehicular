@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\TheftReport;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportAnalytics
 {
@@ -30,6 +31,11 @@ class ReportAnalytics
         return TheftReport::whereIn('vehicle_id', $this->vehicles($filters)->select('id'));
     }
 
+    public function activeVehicles(array $filters)
+    {
+        return $this->vehicles($filters)->whereHas('theftReport', fn ($q) => $q->active());
+    }
+
     public function summary(array $filters): array
     {
         $reports = $this->reports($filters);
@@ -44,7 +50,7 @@ class ReportAnalytics
 
     public function distribution(array $filters, array $fields)
     {
-        $query = $this->vehicles($filters)->whereHas('theftReport', fn ($q) => $q->active());
+        $query = $this->activeVehicles($filters);
         foreach ($fields as $field) {
             $query->whereNotNull($field)->where($field, '!=', '');
         }
@@ -54,13 +60,16 @@ class ReportAnalytics
 
     public function dashboard(array $filters): array
     {
+        $month = DB::connection()->getDriverName() === 'sqlite' ? "strftime('%Y-%m', report_date)" : "DATE_FORMAT(report_date, '%Y-%m')";
+
         return [
             'stats' => $this->summary($filters),
             'topDepartments' => $this->distribution($filters, ['department']),
             'topMunicipalities' => $this->distribution($filters, ['municipality', 'department']),
             'zoneDistribution' => $this->distribution($filters, ['zone']),
             'topBrands' => $this->distribution($filters, ['brand']),
-            'monthlyTrend' => $this->reports($filters)->accepted()->whereIn('case_status', ['abierto', 'resuelto'])->where('report_date', '>=', now()->subMonths(6))->get()->groupBy(fn ($r) => $r->report_date->format('Y-m'))->sortKeys()->map(fn ($rows, $month) => (object) ['month' => $month, 'total' => $rows->unique('vehicle_id')->count()])->values(),
+            'monthlyTrend' => $this->reports($filters)->accepted()->whereIn('case_status', ['abierto', 'resuelto'])->where('report_date', '>=', now()->subMonths(6))
+                ->selectRaw($month.' AS month, COUNT(DISTINCT vehicle_id) AS total')->groupByRaw($month)->orderBy('month')->get(),
         ];
     }
 }

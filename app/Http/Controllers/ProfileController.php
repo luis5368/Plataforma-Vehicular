@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\AuditLog;
+use App\Services\AccountLifecycle;
+use App\Services\ActiveAdministratorGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +41,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Deactivate the user's account without deleting attributed records.
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -50,21 +51,12 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        if ($user->role?->name !== 'admin') {
-            abort_if($user->registeredVehicles()->whereHas('theftReport', fn ($q) => $q->where('reported_by', '!=', $user->id))->exists(), 403,
-                'La cuenta tiene vehículos con reportes de otra persona. Solicita la desactivación a administración.');
-        }
-
-        Auth::logout();
-
         DB::transaction(function () use ($user, $request) {
-            foreach ($user->registeredVehicles()->with('theftReport')->get() as $vehicle) {
-                AuditLog::create(['user_id' => $user->id, 'action' => 'delete_with_account', 'table_name' => 'vehicles', 'record_id' => $vehicle->id, 'old_values' => $vehicle->toArray(), 'ip_address' => $request->ip()]);
-            }
-            AuditLog::create(['user_id' => $user->id, 'action' => 'delete_account', 'table_name' => 'users', 'record_id' => $user->id, 'old_values' => $user->toArray(), 'ip_address' => $request->ip()]);
-            $user->delete();
+            $user = app(ActiveAdministratorGuard::class)->lock($user, active: false, errorBag: 'userDeletion');
+            app(AccountLifecycle::class)->setActive($user, false, $user->id, $request->ip(), 'deactivate_account');
         });
 
+        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

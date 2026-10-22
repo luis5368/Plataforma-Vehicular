@@ -8,7 +8,6 @@
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",
-        "@tailwindcss/vite": "^4.0.0",
         "alpinejs": "^3.4.2",
         "autoprefixer": "^10.6.1",
         "axios": "^1.11.0",
@@ -31,5 +30,8 @@
     },
     "keywords": [],
     "author": "",
-    "license": "ISC"
+    "license": "ISC",
+    "allowScripts": {
+        "esbuild@0.28.2": true
+    }
 }

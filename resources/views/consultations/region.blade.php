@@ -13,7 +13,7 @@
         <div class="col-md-5 mb-4">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">Vehículos con reportes abiertos validados ({{ $vehicles->count() }})</h5>
+                    <h5 class="mb-0">Vehículos con reportes abiertos validados ({{ $vehicles->total() }})</h5>
                 </div>
                 <div class="card-body p-0" style="max-height: 500px; overflow-y: auto;">
                     @if($vehicles->count() > 0)
@@ -43,6 +43,7 @@
                     </div>
                     @endif
                 </div>
+                <div class="card-footer"><p class="small text-secondary">{{ $vehicles->firstItem() ?? 0 }}–{{ $vehicles->lastItem() ?? 0 }} de {{ $vehicles->total() }} resultados. Los indicadores incluyen todo el conjunto filtrado.</p>{{ $vehicles->links() }}</div>
             </div>
         </div>
 
@@ -53,8 +54,9 @@
                     <h5 class="mb-0"><i class="bi bi-geo-alt-fill"></i> Mapa de reportes abiertos validados</h5>
                 </div>
                 <div class="card-body p-0">
-                    @if($mapData->isEmpty())<p class="p-3 text-secondary">Sin datos disponibles para el mapa: no hay reportes con coordenadas en estos filtros.</p>@endif
-                    <div id="region-map" style="height: 500px; width: 100%;"></div>
+                    <p id="region-map-status" class="p-3 text-secondary" role="status" aria-live="polite">Cargando mapa…</p>
+                    <div id="region-map" data-endpoint="{{ route('consultar.region.map') }}" data-filters="{{ json_encode($filters) }}" data-initial-bounds="{{ json_encode($mapBounds) }}" aria-describedby="region-map-status" aria-label="Mapa de reportes abiertos validados" style="height:500px;width:100%"></div>
+                    <noscript><p class="p-3">Activa JavaScript para cargar los puntos del mapa. La tabla paginada y la búsqueda detallada siguen disponibles.</p></noscript>
                 </div>
             </div>
         </div>
@@ -64,35 +66,5 @@
 <!-- Leaflet Scripts -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar mapa centrado en Guatemala
-    var map = L.map('region-map').setView([14.6349, -90.5069], 8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
 
-    // Datos inyectados desde Laravel
-    var locations = @json($mapData);
-    const escapeHtml = value => {const span=document.createElement('span');span.textContent=value ?? '';return span.innerHTML;};
-
-    if (locations.length > 0) {
-        var bounds = [];
-        locations.forEach(function(loc) {
-            if(loc.lat && loc.lng) {
-                var marker = L.marker([loc.lat, loc.lng]).addTo(map);
-                marker.bindPopup(`
-                    <b>VIN:</b> ${escapeHtml(loc.vin)}<br><b>Placa:</b> ${escapeHtml(loc.plate )}<br>
-                    <b>Vehículo:</b> ${escapeHtml(loc.brand )}<br>
-                    <b>Dirección:</b> ${escapeHtml(loc.address )}<br>
-                    <b>Detalles:</b> ${escapeHtml(loc.desc)}
-                `);
-                bounds.push([loc.lat, loc.lng]);
-            }
-        });
-        // Ajustar el mapa para que se vean todos los pines
-        if (bounds.length) map.fitBounds(bounds, { padding: [50, 50] });
-    }
-});
-</script>
 @endsection

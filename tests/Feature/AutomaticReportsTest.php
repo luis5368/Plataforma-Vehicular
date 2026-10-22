@@ -108,7 +108,7 @@ class AutomaticReportsTest extends TestCase
         $this->assertSame('resuelto', $r->fresh()->case_status);
         $this->assertDatabaseHas('audit_logs', ['action' => 'report_validar']);
         $this->get('/dashboard')->assertViewHas('stats', fn ($s) => $s['active_reports'] === 0 && $s['resolved_reports'] === 1);
-        $this->get('/consulta-region')->assertViewHas('vehicles', fn ($v) => $v->isEmpty())->assertViewHas('mapData', fn ($v) => $v->isEmpty());
+        $this->get('/consulta-region')->assertViewHas('vehicles', fn ($v) => $v->isEmpty())->assertViewMissing('mapData');
         $this->post('/logout');
         $this->post('/consulta-publica', ['vin' => $r->vehicle->vin])->assertSee('Reporte resuelto')->assertSee('revisión administrativa');
     }
@@ -134,7 +134,9 @@ class AutomaticReportsTest extends TestCase
         $this->get('/dashboard'.$url)->assertOk()->assertViewHas('stats', fn ($s) => $s['active_reports'] === 1 && $s['pending_reports'] === 1 && $s['total_vehicles'] === 2)
             ->assertViewHas('topDepartments', fn ($rows) => $rows->sum('total') === 1)->assertViewHas('topBrands', fn ($rows) => $rows->sum('total') === 1);
         $this->get('/consulta-region'.$url)->assertOk()->assertViewHas('vehicles', fn ($v) => $v->count() === 1 && $v->first()->vin === $r->vehicle->vin)
-            ->assertViewHas('mapData', fn ($v) => $v->count() === 1 && $v->first()['vin'] === $r->vehicle->vin);
+            ->assertViewMissing('mapData');
+        $this->getJson('/consulta-region/puntos'.$url.'&south=14&north=15&west=-91&east=-90&zoom=14')
+            ->assertOk()->assertJsonCount(1, 'features')->assertJsonPath('features.0.vin', $r->vehicle->vin);
         $this->get('/dashboard?department=SinCoincidencias')->assertOk()->assertSee('Sin datos disponibles');
     }
 
@@ -183,10 +185,10 @@ class AutomaticReportsTest extends TestCase
         $this->put('/vehiculos/'.$r->vehicle_id, array_replace($this->data(), ['theft_description' => 'Descripción histórica corregida']))->assertSessionHasNoErrors();
         $this->assertSame('pendiente', $r->fresh()->validation_status);
         $this->assertNull($r->fresh()->validated_at);
-        $this->actingAs($this->account('admin'))->put('/vehiculos/'.$r->vehicle_id,array_replace($this->data(),[
+        $this->actingAs($this->account('admin'))->put('/vehiculos/'.$r->vehicle_id, array_replace($this->data(), [
             'theft_description' => 'Descripción histórica corregida', 'review_action' => 'validar', 'review_reason' => 'Referencia y antecedentes revisados',
         ]))->assertSessionHasNoErrors();
-        $this->assertSame('validado',$r->fresh()->validation_status);
-        $this->assertSame('administrativa',$r->fresh()->validation_method);
+        $this->assertSame('validado', $r->fresh()->validation_status);
+        $this->assertSame('administrativa', $r->fresh()->validation_method);
     }
 }

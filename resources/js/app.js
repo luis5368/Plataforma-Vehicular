@@ -29,3 +29,5 @@ window.addEventListener('pageshow', () => {
     document.querySelectorAll('form[data-busy]').forEach(form => { delete form.dataset.busy; form.removeAttribute('aria-busy'); });
     document.querySelectorAll('.is-loading').forEach(button => button.classList.remove('is-loading'));
 });
+
+import './regional-map';

@@ -1,5 +1,6 @@
 /* Original visual system for Plataforma Vehicular. No external imagery or fonts. */
 :root {
+  --pv-cluster-bg: #103656;
   color-scheme: dark;
   --pv-bg:#050d1d; --pv-bg-deep:#030817; --pv-panel:#10223b; --pv-glass:rgba(14,34,61,.88);
   --pv-field:#091a30; --pv-text:#eef5ff; --pv-muted:#afc1d8; --pv-subtle:#819ab6;
@@ -11,6 +12,7 @@
   --bs-body-bg:var(--pv-bg); --bs-body-color:var(--pv-text); --bs-secondary-color:var(--pv-muted);
   --bs-border-color:var(--pv-border); --bs-link-color:var(--pv-cyan); --bs-link-hover-color:#b0efff;
 }
+.regional-cluster { display:flex;align-items:center;justify-content:center;border:2px solid var(--pv-cyan);border-radius:50%;background:var(--pv-cluster-bg);color:var(--pv-text);box-shadow:0 0 0 5px #50ddff22;font-size:.8rem;font-weight:700; }
 *{box-sizing:border-box}html{scroll-padding-top:5rem}body{margin:0;background:var(--pv-bg);color:var(--pv-text);font-family:var(--pv-font);line-height:1.65;min-height:100vh;isolation:isolate}
 body::before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;background:radial-gradient(ellipse at 85% 8%,#10396780,transparent 52%),radial-gradient(ellipse at 5% 75%,#08344840,transparent 50%),linear-gradient(155deg,#08182e,var(--pv-bg) 65%)}
 body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.18;background-image:linear-gradient(#5385b50a 1px,transparent 1px),linear-gradient(90deg,#5385b50a 1px,transparent 1px);background-size:64px 64px}

@@ -26,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Password::defaults(fn () => Password::min(12)->letters()->numbers());
         Paginator::useBootstrapFive();
+        $regionalKey = fn ($request) => $request->user() ? 'user:'.$request->user()->getAuthIdentifier() : 'ip:'.$request->ip();
+        RateLimiter::for('regional-pages', fn ($request) => Limit::perMinute(30)->by($regionalKey($request)));
+        RateLimiter::for('regional-map', fn ($request) => Limit::perMinute(120)->by($regionalKey($request)));
         RateLimiter::for('vehicle-writes', function ($request) {
             return Limit::perHour(30)->by((string) $request->user()->id)
                 ->response(function ($request, $headers) {

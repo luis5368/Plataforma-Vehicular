@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\AccountLifecycle;
+use App\Services\ActiveAdministratorGuard;
 use App\Support\VerificationMail;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -91,9 +93,10 @@ class UserController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request, $usuario) {
-            $oldValues = $usuario->toArray();
+            $usuario = app(ActiveAdministratorGuard::class)->lock($usuario, (int) $validated['role_id'], (bool) $validated['is_active']);
+            $oldValues = $usuario->only(['role_id', 'is_active']);
 
-            $usuario->is_active = $validated['is_active'];
+            app(AccountLifecycle::class)->setActive($usuario, (bool) $validated['is_active'], auth()->id(), $request->ip());
             $usuario->name = $validated['name'];
             if ($usuario->email !== $validated['email']) {
                 $usuario->email_verified_at = null;
@@ -113,35 +116,39 @@ class UserController extends Controller
                 'table_name' => 'users',
                 'record_id' => $usuario->id,
                 'old_values' => $oldValues,
-                'new_values' => $usuario->toArray(),
+                'new_values' => $usuario->only(['role_id', 'is_active']) + ['changed_fields' => array_values(array_intersect(array_keys($usuario->getChanges()), ['name', 'email', 'role_id', 'is_active', 'password']))],
                 'ip_address' => $request->ip(),
             ]);
 
         });
 
+        if (! auth()->user()->fresh()->is_active) {
+            auth()->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+
+            return redirect('/');
+        }
+
         return redirect()->route('admin.usuarios.index')->with('success', 'Usuario actualizado exitosamente.');
     }
 
-    // Eliminar usuario
+    // Desactivar usuario conservando su historial
     public function destroy(User $usuario)
     {
-        // Prevenir que el admin se elimine a sí mismo
-        if ($usuario->id === auth()->id()) {
-            return back()->with('error', 'No puedes eliminar tu propio usuario.');
-        }
-
         DB::transaction(function () use ($usuario) {
-            $usuario->update(['is_active' => false]);
-
-            AuditLog::create([
-                'user_id' => auth()->id(),
-                'action' => 'deactivate_user',
-                'table_name' => 'users',
-                'record_id' => $usuario->id,
-                'ip_address' => request()->ip(),
-            ]);
+            $usuario = app(ActiveAdministratorGuard::class)->lock($usuario, active: false);
+            app(AccountLifecycle::class)->setActive($usuario, false, auth()->id(), request()->ip());
 
         });
+
+        if (! auth()->user()->fresh()->is_active) {
+            auth()->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+
+            return redirect('/');
+        }
 
         return redirect()->route('admin.usuarios.index')->with('success', 'Cuenta desactivada. Sus registros se conservan.');
     }

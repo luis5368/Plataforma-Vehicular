@@ -40,7 +40,7 @@ test('absent, partial or invalid coordinates never initialize or estimate a map'
     for (const pair of [['', ''], ['14', ''], ['', '-90'], ['NaN', '-90'], ['91', '-90'], ['14', '-181']]) {
         const view = render(...pair);
         assert.equal(view.maps.length, 0);
-        assert.equal(view.status.textContent, 'No se registró una ubicación con coordenadas');
+        assert.equal(view.status.textContent, 'No se registró una ubicación con coordenadas para este reporte');
     }
     assert.equal(render('0', '0').markers.length, 1);
 });

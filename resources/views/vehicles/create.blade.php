@@ -112,7 +112,7 @@
         </div>
 
         <!-- 3. Sección Condicional de Reporte de Robo (Oculta por defecto) -->
-        <div id="theft_report_section" class="card shadow-sm mb-4" style="display: {{ old('has_theft_report') ? 'block' : 'none' }}; border-left: 5px solid #dc3545;">
+        <div id="theft_report_section" class="card shadow-sm mb-4" style="display: {{ old('has_theft_report') ? 'block' : 'none' }}; border-left: 5px solid var(--pv-danger);">
             <div class="card-header bg-danger text-white">
                 <h5 class="mb-0"><i class="bi bi-shield-x"></i> Detalles del Reporte de Robo</h5>
             </div>
@@ -148,7 +148,7 @@
                     <label class="form-label fw-bold">Ubicación Exacta en el Mapa</label>
                     <p class="small text-muted mb-2">Haz clic en el mapa para marcar la ubicación, o usa el buscador integrado (lupa).</p>
 
-                    <div id="map" style="height: 350px; width: 100%; border-radius: 8px; border: 2px solid #dee2e6; z-index: 1;"></div>
+                    <div id="map" style="height: 350px; width: 100%; border-radius: 8px; border: 2px solid var(--pv-border); z-index: 1;"></div>
 
                     <!-- Campos ocultos para enviar las coordenadas a Laravel -->
                     <input type="hidden" id="theft_latitude" name="theft_latitude" value="{{ old('theft_latitude') }}">

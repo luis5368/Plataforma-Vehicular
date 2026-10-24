@@ -48,7 +48,7 @@ class IndividualTheftMapTest extends TestCase
             ->assertSee('data-latitude="14.6349"', false)->assertSee('data-longitude="-90.5069"', false)
             ->assertSee('Referencia declarada del robo')->assertSee('Mixco')->assertSee('Guatemala')
             ->assertSee('el mapa no verifica por sí mismo que el hecho ocurrió')
-            ->assertDontSee('No se registró una ubicación con coordenadas');
+            ->assertDontSee('No se registró una ubicación con coordenadas para este reporte');
         $this->assertSame(1, substr_count($response->getContent(), 'src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"'));
     }
 
@@ -62,7 +62,7 @@ class IndividualTheftMapTest extends TestCase
     {
         $v = $this->vehicle($lat, $lng);
         $this->actingAs($this->account('consulta'))->get('/consultar/buscar?plate='.$v->plate)
-            ->assertOk()->assertSee('No se registró una ubicación con coordenadas')
+            ->assertOk()->assertSee('No se registró una ubicación con coordenadas para este reporte')
             ->assertSee('Referencia declarada del robo')->assertDontSee('data-reported-theft-map', false);
     }
 

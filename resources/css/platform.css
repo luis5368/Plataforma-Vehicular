@@ -1,4 +1,9 @@
 /* Original visual system for Plataforma Vehicular. No external imagery or fonts. */
+.public-report-signal{display:flex;align-items:center;gap:.75rem;padding:1rem;border:1px solid var(--pv-border);border-radius:var(--pv-radius-sm);background:var(--pv-field);color:var(--pv-text)}
+.public-report-signal>.bi{font-size:1.5rem;flex-shrink:0}
+.public-report-signal--danger{background:#3c2032;color:#ffd2df;border-color:#96516a}
+.public-report-signal--warning{background:#3c301c;color:#ffe3ae;border-color:#8d7548}
+.public-report-signal--success{background:#123b32;color:#c7f5e4;border-color:#3b8069}
 :root {
   --pv-cluster-bg: #103656;
   color-scheme: dark;

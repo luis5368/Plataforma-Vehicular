@@ -7,7 +7,7 @@ function initializeReportedTheftMaps() {
         const lng = Number(element.dataset.longitude);
         if (!element.dataset.latitude?.trim() || !element.dataset.longitude?.trim()
             || !Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-            status.textContent = 'No se registró una ubicación con coordenadas';
+            status.textContent = 'No se registró una ubicación con coordenadas para este reporte';
             element.hidden = true;
             return;
         }

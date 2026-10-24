@@ -13,7 +13,7 @@ Los formularios actuales de creación y edición ya ofrecen Leaflet con selecci�
 - Sección **«Ubicación reportada del robo»**, visible solo en el resultado detallado autorizado con un reporte.
 - Un marcador centrado en las coordenadas guardadas, zoom inicial 15. Acepta coordenadas cero y verifica ambos límites geográficos.
 - Dirección del robo, municipio y departamento se muestran solo cuando están registrados, tanto en texto accesible como en el popup. Se escapan en Blade y JavaScript.
-- Mensaje: **«No se registró una ubicación con coordenadas»** si falta cualquiera de las coordenadas o están fuera de rango. No se crea un mapa, no se consulta geocodificación y no se coloca un punto por defecto.
+- Mensaje: **«No se registró una ubicación con coordenadas para este reporte»** si falta cualquiera de las coordenadas o están fuera de rango. No se crea un mapa, no se consulta geocodificación y no se coloca un punto por defecto.
 - Aviso de que la ubicación es declarada y **el mapa no verifica por sí mismo que el hecho ocurrió**. Una biblioteca no disponible produce un mensaje de fallo distinto del estado sin coordenadas.
 
 ## Reutilización regional

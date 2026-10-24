@@ -24,7 +24,7 @@
     <p class="small text-muted mb-2">Haz clic en el mapa para marcar la ubicación exacta, o usa el buscador.</p>
     
     <!-- Contenedor del Mapa -->
-    <div id="map" style="height: 350px; width: 100%; border-radius: 8px; border: 2px solid #dee2e6;"></div>
+    <div id="map" style="height: 350px; width: 100%; border-radius: 8px; border: 2px solid var(--pv-border);"></div>
     
     <!-- Campos ocultos para enviar las coordenadas a Laravel -->
     <input type="hidden" id="theft_latitude" name="theft_latitude" value="{{ old('theft_latitude', $vehiculo->theft_latitude) }}">

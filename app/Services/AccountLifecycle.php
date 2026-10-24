@@ -18,6 +18,7 @@ class AccountLifecycle
         $before = $user->is_active;
         $user->is_active = $active;
         $user->remember_token = null;
+        $user->active_session_hash = null;
         $user->save();
 
         if (config('session.driver') === 'database') {

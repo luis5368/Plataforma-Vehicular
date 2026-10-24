@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\TheftReport;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Services\ActiveSession;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -38,7 +39,9 @@ class AccountLifecycleTest extends TestCase
         $report = $vehicle->theftReport;
         $consultation = Consultation::create(['user_id' => $user->id, 'vehicle_id' => $vehicle->id, 'consultation_date' => now(), 'result' => 'con_reporte_activo']);
         DB::table('sessions')->insert(['id' => 'other-device', 'user_id' => $user->id, 'payload' => '', 'last_activity' => time()]);
+        $sessionBinding = session()->get(ActiveSession::KEY);
         config(['session.driver' => 'database']);
+        $this->withSession([ActiveSession::KEY => $sessionBinding]);
         $history = AuditLog::pluck('id')->all();
         $oldSession = session()->getId();
         $oldCsrf = session()->token();

@@ -54,17 +54,13 @@
                     <h5 class="mb-0"><i class="bi bi-geo-alt-fill"></i> Mapa de reportes abiertos validados</h5>
                 </div>
                 <div class="card-body p-0">
-                    <p id="region-map-status" class="p-3 text-secondary" role="status" aria-live="polite">Cargando mapa…</p>
-                    <div id="region-map" data-endpoint="{{ route('consultar.region.map') }}" data-filters="{{ json_encode($filters) }}" data-initial-bounds="{{ json_encode($mapBounds) }}" aria-describedby="region-map-status" aria-label="Mapa de reportes abiertos validados" style="height:500px;width:100%"></div>
-                    <noscript><p class="p-3">Activa JavaScript para cargar los puntos del mapa. La tabla paginada y la búsqueda detallada siguen disponibles.</p></noscript>
+                    <x-leaflet-map id="region-map" label="Mapa de reportes abiertos validados" height="500px"
+                        :data-endpoint="route('consultar.region.map')" :data-filters="json_encode($filters)"
+                        :data-initial-bounds="json_encode($mapBounds)" />
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Leaflet Scripts -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 @endsection

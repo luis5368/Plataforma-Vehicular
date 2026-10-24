@@ -5,8 +5,11 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\ActiveAdministratorGuard;
+use App\Services\ActiveSession;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Session\ArraySessionHandler;
+use Illuminate\Session\Store;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -22,7 +25,20 @@ try {
         }
         usleep(10000);
     }
-    if (in_array($operation, ['disable', 'demote'], true)) {
+    if ($operation === 'login') {
+        $store = new Store('audit', new ArraySessionHandler(120));
+        $service = app(ActiveSession::class);
+        $service->start(User::findOrFail($target), $store);
+        touch($directory.'/'.$batch.'-'.$worker.'.done');
+        while (! is_file($directory.'/'.$batch.'-1.done') || ! is_file($directory.'/'.$batch.'-2.done')) {
+            if (microtime(true) > $deadline) {
+                throw new RuntimeException('Login barrier timed out.');
+            }
+            usleep(10000);
+        }
+        echo $service->matches(User::findOrFail($target), $store) ? 'current' : 'replaced';
+        exit;
+    } elseif (in_array($operation, ['disable', 'demote'], true)) {
         DB::transaction(function () use ($operation, $target) {
             $role = $operation === 'demote' ? Role::where('name', 'consulta')->value('id') : null;
             $user = app(ActiveAdministratorGuard::class)->lock(User::findOrFail($target), roleId: $role, active: $operation === 'disable' ? false : null);

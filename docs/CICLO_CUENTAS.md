@@ -1,6 +1,6 @@
 # Ciclo de cuentas y conservación
 
-El cierre normal desde Perfil desactiva la cuenta (`is_active = false`). Requiere la contraseña actual y conserva usuario, vehículos, reportes, consultas, bitácora y atribución. No ejecuta `User::delete()` ni activa las cascadas existentes del esquema. Las restricciones para eliminar reportes propios abiertos son independientes del cierre de cuenta.
+El cierre normal desde Perfil desactiva la cuenta (`is_active = false`). Requiere la contraseña actual y conserva usuario, vehículos, reportes, fotografías privadas, consultas, bitácora y atribución. No ejecuta `User::delete()` ni activa las cascadas existentes del esquema. Las restricciones para eliminar reportes propios abiertos son independientes del cierre de cuenta.
 
 La operación transaccional conserva la protección del último administrador activo. Cierra la sesión actual, invalida su identificador y token CSRF y revoca el token de acceso recordado. Con el controlador de sesiones `database` (predeterminado del proyecto), elimina las sesiones de ese usuario usando la conexión y tabla configuradas, tanto al desactivar como al reactivar. No se han añadido tokens API.
 
@@ -17,6 +17,8 @@ Registro continúa publicando automáticamente al cumplir las validaciones actua
 ## Alcance y riesgos
 
 - No hay eliminación definitiva ni anonimización automática. Una solicitud de borrado definitivo exige definir explícitamente la política de retención y privacidad, obligaciones sobre evidencias e historial y tratamiento de atribuciones. Las cascadas históricas siguen en el esquema: no ejecutar borrados físicos como sustituto del cierre normal.
-- Para sesiones `file`, Redis u otro almacén, el cierre invalida la sesión actual y el acceso recordado, pero no enumera sesiones de otros dispositivos. El middleware bloquea estas mientras la cuenta esté inactiva; antes de reactivar debe revocarse cualquier sesión persistente de ese almacén. Usar `SESSION_DRIVER=database` para la revocación por usuario implementada aquí.
+- Actualización 2026-10-23: `AccountLifecycle` revoca también el hash de sesión activa al desactivar/reactivar. Esto invalida autorización en `file`, Redis y otros drivers sin enumerar sus registros. Se conserva la eliminación adicional de sesiones `database`. El driver real y el recorrido entre dos navegadores siguen pendientes de comprobación en el hosting.
 - Los bloqueos de administradores se verifican funcionalmente con SQLite en memoria. Su comportamiento concurrente de producción requiere comprobación con el motor y aislamiento de producción.
-- No se requieren migraciones nuevas ni modificaciones de datos reales para esta fase.
+- La fase 3 no requirió migraciones. La ampliación de fotografías/sesión única añade dos migraciones aditivas; véase [Fotografías y sesión única](FOTOS_Y_SESION_UNICA.md). Las sesiones previas deben volver a autenticarse. No se modificaron datos reales.
+
+Las fotos, sus metadatos y los pendientes de limpieza se respaldan junto con vehículos/reportes. Desactivar nunca limpia imágenes. El borrado permitido de un reporte programa limpieza durable mediante su ciclo de vida; no usar cascadas SQL como sustituto del servicio.

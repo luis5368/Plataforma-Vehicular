@@ -6,7 +6,7 @@
 <div class="container py-4">
     <h2 class="mb-4"><i class="bi bi-plus-circle"></i> Registrar Nuevo Vehículo</h2>
 
-    <form action="{{ route('vehiculos.store') }}" method="POST">
+    <form action="{{ route('vehiculos.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <!-- 1. Información Básica del Vehículo -->
@@ -140,6 +140,8 @@
                     <input type="text" class="form-control" id="theft_report_address" name="theft_report_address"
                            value="{{ old('theft_report_address') }}" placeholder="Ej: Frente al Centro Comercial Oakland, Zona 10">
                 </div>
+
+                @include('vehicles.photo-input')
 
                 <!-- MAPA INTERACTIVO (Leaflet.js + OpenStreetMap) -->
                 <div class="mb-3">

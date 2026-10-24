@@ -51,6 +51,24 @@ try {
         throw new RuntimeException('Cached application failed to boot');
     }
     echo 'PASS fresh application boots with cached routes and config'.PHP_EOL;
+    $routes = $fresh['router']->getRoutes();
+    foreach (['reports.photos.show', 'consultar.region', 'admin.usuarios.index', 'profile.destroy', 'verification.send', 'logout'] as $name) {
+        $middleware = $routes->getByName($name)?->gatherMiddleware() ?? [];
+        if (! in_array('auth', $middleware, true) || ! in_array('session.current', $middleware, true)) {
+            throw new RuntimeException('Authenticated route missing session guard');
+        }
+    }
+    $photoMiddleware = $routes->getByName('reports.photos.show')->gatherMiddleware();
+    if (! in_array('verified', $photoMiddleware, true) || ! in_array('active', $photoMiddleware, true)
+        || ! in_array('role:admin,consulta,registro', $photoMiddleware, true) || ! in_array('throttle:report-photos', $photoMiddleware, true)) {
+        throw new RuntimeException('Photo route missing access controls');
+    }
+    foreach (['login', 'password.request', 'auth.google'] as $name) {
+        if (in_array('session.current', $routes->getByName($name)->gatherMiddleware(), true)) {
+            throw new RuntimeException('Public authentication route incorrectly guarded');
+        }
+    }
+    echo 'PASS route middleware: private photos, critical sessions, public authentication'.PHP_EOL;
 } catch (Throwable $exception) {
     fwrite(STDERR, 'FAIL '.get_class($exception).' at '.basename($exception->getFile()).':'.$exception->getLine().PHP_EOL);
     exit(1);

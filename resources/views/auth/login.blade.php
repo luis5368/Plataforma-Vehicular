@@ -1,6 +1,8 @@
 @extends('layouts.auth')
 @section('title','Iniciar sesión')
 @section('auth-content')
+@if(session('session-replaced'))<div class="alert alert-warning" role="alert">{{ session('session-replaced') }}</div>@endif
+<p class="small text-secondary">Una sesión por cuenta: ingresar en otro dispositivo reemplaza la anterior. Si pierdes la sesión, deberás autenticarte nuevamente, incluso con «Recordarme».</p>
 <div class="auth-heading"><span class="eyebrow">BIENVENIDO DE NUEVO</span><h1>Inicia sesión</h1><p>Tu plataforma de registro y consulta vehicular.</p></div>
 <form method="POST" action="{{ route('login') }}">
 @csrf

@@ -6,8 +6,11 @@ use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+
+Schedule::command('reports:cleanup-photos')->hourly()->withoutOverlapping();
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -27,7 +30,7 @@ Artisan::command('app:create-admin', function () {
             $this->error($error);
         }
 
-return 1;
+        return 1;
     }
     DB::transaction(function () use ($name, $email, $password) {
         $role = Role::firstOrCreate(['name' => 'admin'], ['description' => 'Administración']);

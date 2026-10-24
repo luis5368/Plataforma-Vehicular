@@ -1,5 +1,7 @@
 # Fase 2: región paginada y mapa por área visible
 
+**Actualización 2026-10-24:** la región comparte contenedor/assets y configuración Leaflet/OSM con el nuevo [mapa de consulta individual](MAPA_CONSULTA_INDIVIDUAL.md). No cambian sus filtros, endpoint, límites ni agrupación. La revisión visual de ambas pantallas sigue pendiente por ausencia de navegador disponible; las comprobaciones automatizadas se describen en esa entrega.
+
 ## Comportamiento
 
 - La tabla muestra **25 vehículos por página**, ordenados por fecha de creación e ID descendente. `withQueryString()` conserva filtros y otros parámetros al paginar. Se mantienen VIN completo, placa, ubicación, fecha, fuente y estado; la búsqueda detallada permanece disponible sin cambios de permisos.

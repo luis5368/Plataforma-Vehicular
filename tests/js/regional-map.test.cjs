@@ -32,7 +32,7 @@ function harness() {
         setTimeout(callback) { timers.set(++sequence, callback); return sequence; },
         clearTimeout(id) { timers.delete(id); },
     };
-    vm.runInNewContext(fs.readFileSync('resources/js/regional-map.js', 'utf8'), context);
+    vm.runInNewContext(fs.readFileSync('resources/js/map-core.js', 'utf8').replace(/^export /gm, '') + '\n' + fs.readFileSync('resources/js/regional-map.js', 'utf8').replace(/^import .*;\r?\n/gm, ''), context);
     return {
         requests, markers, status, timers,
         move() { handlers.movestart(); west += 0.01; handlers.moveend(); handlers.zoomend(); },

@@ -56,6 +56,11 @@ class TheftReport extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
+    public function photos()
+    {
+        return $this->hasMany(ReportPhoto::class);
+    }
+
     public function reportedBy()
     {
         return $this->belongsTo(User::class, 'reported_by');

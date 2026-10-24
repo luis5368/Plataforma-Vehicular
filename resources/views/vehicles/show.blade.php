@@ -61,4 +61,5 @@
         </div>
     </div>
 </div>
+@if($vehiculo->theftReport)<x-report-photos :report="$vehiculo->theftReport" />@endif
 @endsection

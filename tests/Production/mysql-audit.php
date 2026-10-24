@@ -10,6 +10,7 @@ use App\Services\RegionalMap;
 use App\Services\ReportAnalytics;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 function verify(bool $condition, string $label): void
 {
@@ -66,8 +67,29 @@ try {
     }
     $pdo = new PDO('mysql:host=127.0.0.1;port=33079', 'root', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
     verify(str_starts_with($pdo->query('SELECT VERSION()')->fetchColumn(), '8.0.'), 'MySQL 8.0 (not SQLite/MariaDB)');
-    $pdo->exec('CREATE DATABASE IF NOT EXISTS pv_audit CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+    $sessionOnly = in_array('--session-only', $argv, true);
+    if ($sessionOnly) {
+        $database = 'pv_session_audit_'.bin2hex(random_bytes(6));
+        putenv('PV_SESSION_AUDIT_DATABASE='.$database);
+        $pdo->exec('CREATE DATABASE '.$database.' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+    } else {
+        $pdo->exec('CREATE DATABASE IF NOT EXISTS pv_audit CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+    }
     $app = require __DIR__.'/bootstrap.php';
+    if ($sessionOnly) {
+        verify(Artisan::call('migrate', ['--force' => true]) === 0, 'additive migrations on a new isolated MySQL database');
+        $role = Role::create(['name' => 'consulta', 'description' => 'Audit']);
+        $user = User::factory()->create(['role_id' => $role->id]);
+        for ($round = 1; $round <= 5; $round++) {
+            verify(race('login', [$user->id, $user->id]) === ['current', 'replaced'], 'concurrent login round '.$round.': exactly one active session');
+        }
+        verify(count(Schema::getForeignKeys('report_photos')) === 2
+            && count(Schema::getColumnListing('report_photos')) === 9
+            && Schema::hasTable('photo_file_deletions')
+            && Schema::hasColumn('users', 'active_session_hash'), 'new schema confirmed in MySQL');
+        echo 'Session audit complete; synthetic database retained, no fresh/drop/restore executed.'.PHP_EOL;
+        exit;
+    }
     verify(Artisan::call('migrate:fresh', ['--force' => true]) === 0, 'all migrations on isolated pv_audit');
     $adminRole = Role::create(['name' => 'admin', 'description' => 'Audit']);
     $consultaRole = Role::create(['name' => 'consulta', 'description' => 'Audit']);

@@ -10,6 +10,11 @@ use Illuminate\Validation\ValidationException;
 
 class ReportLifecycle
 {
+    public function deletePhotos(TheftReport $report): void
+    {
+        app(ReportPhotos::class)->scheduleDeletion($report);
+    }
+
     // Called inside the vehicle transaction, with its row locked on updates.
     public function save(Vehicle $vehicle, array $data, User $actor): TheftReport
     {

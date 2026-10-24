@@ -2,6 +2,8 @@
 
 Fecha: **2026-10-20**, America/Guatemala. **No autoriza un despliegue.** Se trabajó en el proyecto actual; se conservaron las fases 1–3 y los cambios previos de `package.json` / `package-lock.json`. No se modificaron `.env`, permisos funcionales ni datos reales. No hay migraciones nuevas.
 
+**Ampliación 2026-10-23:** fotografías privadas y una sesión activa por cuenta incorporan dos migraciones aditivas y requisitos de GD, cargas, limpieza y respaldo. La ausencia de migraciones indicada arriba corresponde a la auditoría inicial. Véase [Fotografías y sesión única](FOTOS_Y_SESION_UNICA.md); los resultados históricos de esta auditoría se conservan como tales.
+
 ## Dictamen y estados
 
 **Preparación local aprobada con pendientes; salida a producción bloqueada hasta cerrar las comprobaciones de destino.** El destino previsto es **Hostinger, mediante un subdominio y conexión a MySQL**, según la ampliación solicitada para esta fase. El plan contratado, subdominio exacto, ubicación/proveedor de la base, sistema operativo, servidor HTTP y topología de proxy siguen pendientes. El apartado 11 contiene las comprobaciones específicas; no se presuponen cPanel, Apache, Nginx, contenedores ni servicios gestionados.
@@ -39,7 +41,7 @@ Revisar mediante aserciones de verdadero/falso o inspección privada. **No usar 
 - [ ] `SESSION_SECURE_COOKIE=true`, `SESSION_HTTP_ONLY=true`, `SESSION_SAME_SITE=lax`, `SESSION_PATH=/`; dominio de cookie restringido al ámbito necesario, sin ampliarlo a subdominios sin justificación. `lax` permite el retorno GET de OAuth con su estado de sesión. Ajustar `SESSION_LIFETIME` y cifrado del almacén según política.
 - [ ] Usar **`SESSION_DRIVER=database`** para la revocación por usuario implementada. Confirmar `SESSION_CONNECTION` y `SESSION_TABLE` si se personalizan. La tabla debe tener `id`, `user_id` indexado, `ip_address`, `user_agent`, `payload`, `last_activity`; la migración inicial crea la tabla y el índice. No basta con que exista en el servidor local.
 - [ ] En dos navegadores de staging: autenticar la misma cuenta de prueba, desactivarla desde Perfil o administración, comprobar logout del navegador actual, rechazo de ambos accesos protegidos y del login, reactivar desde admin y comprobar que ambos requieren login nuevo. Verificar auditoría sin contenido sensible. Localmente se probaron invalidación/CSRF por HTTP en la suite y eliminación de dos filas de sesión en MySQL; no se hizo este recorrido visual remoto.
-- [ ] Si el destino usa Redis, `file` u otro driver, **bloquear la salida** hasta implementar/probar revocación equivalente antes de reactivar; el bloqueo por cuenta inactiva por sí solo no invalida sesiones antiguas después de reactivarla. Véase [Ciclo de cuentas](CICLO_CUENTAS.md).
+- [ ] La ampliación de sesión única revoca el hash por cuenta en todos los drivers al desactivar/reactivar. Si el destino usa Redis, `file` u otro driver, comprobar esa revocación y login posterior desde dos navegadores antes de aprobar. `database` conserva además el borrado físico de filas. No se cambia el driver instalado automáticamente. Véase [Ciclo de cuentas](CICLO_CUENTAS.md).
 - [ ] Confirmar almacén compartido de sesiones y caché para todas las instancias. El rate limiter usa la caché; `array` no es apropiado para producción. El valor por defecto de `CACHE_STORE` en código es `database`; verificar tablas `cache` y `cache_locks` o el almacén compartido elegido.
 
 ### Proxy HTTPS
@@ -103,7 +105,7 @@ No se alteró esa migración histórica. No hay `.env` real, archivos de clave p
 
 No se consultó `migrate:status` contra la base real. Se ejecutaron todas las migraciones **solo** en MySQL aislado y en SQLite de la suite. No se añadió esquema ni índice nuevo.
 
-- [ ] Capturar `php artisan migrate:status` en staging y luego mediante el procedimiento aprobado en destino, sin mostrar configuración privada. El estado requerido comprende todas las migraciones del repositorio hasta `2026_10_18_000003_separate_report_validation_and_case`.
+- [ ] Capturar `php artisan migrate:status` en staging y luego mediante el procedimiento aprobado en destino, sin mostrar configuración privada. El estado requerido comprende todas las migraciones del repositorio hasta `2026_10_23_000002_create_report_photos`, incluida `2026_10_23_000001_add_active_session_hash_to_users`. Las nuevas columnas fuerzan reautenticación de las sesiones previas; coordinar esquema y código sin borrar usuarios/sesiones globalmente.
 - [ ] Antes de actualizar, obtener un respaldo consistente y protegido de la base (InnoDB, sin DDL simultáneo), archivos persistentes y versión del artefacto; conservar acceso al gestor de secretos existente sin volcarlos al repositorio. Comprobar espacio, integridad del respaldo y restauración completa en una base separada.
 - [ ] Ensayar sobre una **copia autorizada y protegida de la base existente** con MySQL de la versión/aislamiento/collation de destino. Los 10 000 registros sintéticos no sustituyen esta prueba de compatibilidad de datos.
 - [ ] Verificar previamente duplicados tras normalizar VIN/placa y múltiples reportes por vehículo, con reportes de conteos o IDs tratados privadamente. La migración `000001` puede detenerse por duplicados; no fusionar ni eliminar automáticamente registros para continuar.
@@ -293,6 +295,8 @@ Hostinger permite gestionar el subdominio como sitio independiente o dentro de o
 **Aprobado en esta ampliación:** revisión documental y criterios preparados con referencias oficiales; no se certificó ninguna cuenta contratada. **Pendiente de plan/credenciales/proveedor:** todas las evidencias de la tabla. **Bloqueante para publicar:** cualquier falta de aislamiento público/privado, origen de red restringido, transporte seguro, compatibilidad o ensayo/restauración, además de los bloqueantes generales de este documento.
 
 ## Criterio final de salida
+
+- [ ] Fotografías/sesión única: GD JPEG/PNG/WebP, límites de carga PHP/proxy, directorio privado persistente, scheduler de limpieza y respaldo/restauración **conjuntos de archivos y base** probados. No publicar `storage/app/report-photos`; confirmar la ruta autorizada y el rechazo de sesiones reemplazadas en fotos, administración y región. Estos requisitos están pendientes en Hostinger; no se editó su configuración.
 
 - [ ] Todos los pendientes de hosting/credenciales tienen evidencia real y no quedan bloqueantes abiertos.
 - [ ] Respaldo restaurado con éxito, ensayo de migración de la copia existente y rollback/RPO/RTO aprobados.

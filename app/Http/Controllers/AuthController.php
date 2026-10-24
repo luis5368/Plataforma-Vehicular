@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\ActiveSession;
 use App\Support\VerificationMail;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
@@ -35,6 +36,10 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['email' => 'Cuenta no disponible.']);
         }
         $request->session()->regenerate();
+        app(ActiveSession::class)->start($request->user(), $request->session());
+        if ($request->boolean('remember')) {
+            Auth::login($request->user()->fresh(), true);
+        }
         $this->audit('login', $request->user());
 
         return redirect()->route('dashboard');
@@ -72,6 +77,7 @@ class AuthController extends Controller
         });
         Auth::login($user);
         $request->session()->regenerate();
+        app(ActiveSession::class)->start($request->user(), $request->session());
         $request->session()->forget('registration_role');
         if (! VerificationMail::dispatch(fn () => event(new Registered($user)), $user->id)) {
             return redirect()->route('verification.notice')->withErrors(['verification' => __('verification.failed', [], 'es')]);
@@ -83,9 +89,10 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         if ($request->user()) {
+            app(ActiveSession::class)->forget($request->user(), $request->session());
             $this->audit('logout', $request->user());
         }
-        Auth::logout();
+        Auth::logoutCurrentDevice();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -131,6 +138,7 @@ class AuthController extends Controller
             });
             Auth::login($user);
             $request->session()->regenerate();
+            app(ActiveSession::class)->start($request->user(), $request->session());
             $request->session()->forget('registration_role');
 
             return redirect()->route('dashboard');

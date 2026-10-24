@@ -1,3 +1,5 @@
+import { createReportMap, escapeMapText } from './map-core';
+
 function initializeRegionalMap() {
     const element = document.getElementById('region-map');
     if (!element) return;
@@ -8,21 +10,14 @@ function initializeRegionalMap() {
         return;
     }
     const filters = JSON.parse(element.dataset.filters);
-    const map = L.map(element, { maxZoom: 18 }).setView([15.5, -90.3], 7);
+    const map = createReportMap(L, element, [15.5, -90.3], 7);
     const initial = JSON.parse(element.dataset.initialBounds);
     if (initial) {
         if (initial.south === initial.north && initial.west === initial.east) map.setView([initial.south, initial.west], 14);
         else map.fitBounds([[initial.south, initial.west], [initial.north, initial.east]], { padding: [24, 24], maxZoom: 14 });
     }
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors', maxZoom: 18,
-    }).addTo(map);
     const layers = L.layerGroup().addTo(map);
-    const escapeHtml = value => {
-        const span = document.createElement('span');
-        span.textContent = value ?? '';
-        return span.innerHTML;
-    };
+    const escapeHtml = escapeMapText;
     let timer, controller, revision = 0, lastSuccess = null;
     let retryAt = 0;
     const invalidate = () => {

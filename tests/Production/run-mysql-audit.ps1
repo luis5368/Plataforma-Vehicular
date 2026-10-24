@@ -1,4 +1,4 @@
-param([string]$MySqlBin = 'C:/Program Files/MySQL/MySQL Server 8.0/bin')
+param([string]$MySqlBin = 'C:/Program Files/MySQL/MySQL Server 8.0/bin', [switch]$SessionOnly)
 $ErrorActionPreference = 'Stop'
 $project = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $audit = [IO.Path]::GetFullPath((Join-Path $project 'storage/framework/production-audit'))
@@ -38,7 +38,8 @@ try {
     if (-not $ready) { throw 'Isolated MySQL did not become ready.' }
     Push-Location $project
     try {
-        & php tests/Production/mysql-audit.php
+        if ($SessionOnly) { & php tests/Production/mysql-audit.php --session-only }
+        else { & php tests/Production/mysql-audit.php }
         if ($LASTEXITCODE -ne 0) { throw 'MySQL audit failed.' }
     } finally { Pop-Location }
 } finally {

@@ -31,3 +31,6 @@ window.addEventListener('pageshow', () => {
 });
 
 import './regional-map';
+
+import './report-photos';
+import './reported-theft-map';

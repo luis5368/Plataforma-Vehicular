@@ -106,6 +106,8 @@ class UserController extends Controller
 
             if (! empty($validated['password'])) {
                 $usuario->password = Hash::make($validated['password']);
+                $usuario->active_session_hash = null;
+                $usuario->remember_token = null;
             }
 
             $usuario->save();

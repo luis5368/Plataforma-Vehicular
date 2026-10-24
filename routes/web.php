@@ -14,6 +14,7 @@ use App\Http\Controllers\ConsultationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicSearchController;
+use App\Http\Controllers\ReportPhotoController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
@@ -55,7 +56,9 @@ Route::middleware('guest')->group(function () {
 // ======================================================================
 // 2. RUTAS PROTEGIDAS (Requieren autenticación)
 // ======================================================================
-Route::middleware(['auth', 'active', 'verified'])->group(function () {
+Route::middleware(['auth', 'session.current', 'active', 'verified'])->group(function () {
+
+    Route::get('/reportes/fotos/{photo}', [ReportPhotoController::class, 'show'])->middleware(['role:admin,consulta,registro', 'throttle:report-photos'])->name('reports.photos.show');
 
     // Dashboard: Todos los roles logueados
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -82,14 +85,14 @@ Route::middleware(['auth', 'active', 'verified'])->group(function () {
         Route::get('/admin/bitacora', [AuditLogController::class, 'index'])->name('admin.bitacora');
     });
 });
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'session.current'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/verify-email', EmailVerificationPromptController::class)->middleware('active')->name('verification.notice');
     Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)->middleware(['active', 'signed', 'throttle:6,1'])->name('verification.verify');
     Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])->middleware(['active', 'throttle:6,1'])->name('verification.send');
 });
 
-Route::middleware(['auth', 'active'])->group(function () {
+Route::middleware(['auth', 'session.current', 'active'])->group(function () {
     Route::get('/confirm-password', [ConfirmablePasswordController::class, 'show'])->name('password.confirm');
     Route::post('/confirm-password', [ConfirmablePasswordController::class, 'store']);
     Route::put('/password', [PasswordController::class, 'update'])->name('password.update');

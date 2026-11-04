@@ -26,3 +26,5 @@ Thumbs.db
 /storage/framework/lsp-*.php
 /.work-*.cjs
 /storage/framework/production-audit/
+/storage/app/private/staging-import/
+/docs/Base_Vehiculos_Robo_2024_2026_STAGING_CORREGIDA.xlsx

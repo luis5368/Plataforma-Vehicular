@@ -2,6 +2,7 @@
 <html lang="es" data-bs-theme="dark">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="csrf-token" content="{{ csrf_token() }}"><title>@yield('title', 'InfoVehicular GT · Registro y consulta')</title>@include('layouts.assets')</head>
 <body class="public-page">
+<x-staging-notice />
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
 <header class="public-header container"><a href="{{ route('welcome') }}" aria-label="InfoVehicular GT, inicio"><x-brand :compact="true" /></a><nav aria-label="Navegación pública"><a href="{{ route('welcome') }}#consulta-publica">Consultar vehículo</a><a href="{{ route('login') }}" class="btn btn-outline-primary">Ingresar <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></nav></header>
 <main id="main-content" class="container py-4">

@@ -37,7 +37,7 @@
                         <tr>
                             <td>
                                 <code class="text-primary fw-bold" style="font-size: 0.9rem;">
-                                    {{ $vehicle->vin }}
+                                    {{ $vehicle->vin }}<x-synthetic-label :synthetic="$vehicle->synthetic_data" />
                                 </code>
                             </td>
                             <td>

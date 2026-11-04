@@ -3,6 +3,7 @@
 @section('title', 'Detalle del Vehículo')
 
 @section('content')
+<x-synthetic-label :synthetic="$vehiculo?->synthetic_data" />
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-car-front"></i> Detalle del Vehículo</h2>

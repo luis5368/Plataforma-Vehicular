@@ -8,6 +8,7 @@
     @include('layouts.assets')
 </head>
 <body class="auth-page">
+<x-staging-notice />
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
 <header class="auth-header"><a href="{{ route('welcome') }}" aria-label="InfoVehicular GT, inicio"><x-brand :compact="true" /></a><a class="back-link" href="{{ route('welcome') }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Volver al inicio</a></header>
 <main id="main-content" class="auth-composition">

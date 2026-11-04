@@ -3,6 +3,7 @@
 @section('title', 'Editar Vehículo')
 
 @section('content')
+<x-synthetic-label :synthetic="$vehiculo?->synthetic_data" />
 <div class="container py-4">
     <h2 class="mb-4"><i class="bi bi-pencil"></i> Editar Vehículo</h2>
     

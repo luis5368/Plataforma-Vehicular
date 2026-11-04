@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ActiveAccount;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\IdentifyStaging;
 use App\Http\Middleware\SingleActiveSession;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->append(IdentifyStaging::class);
         // Aquí registramos el alias 'role' para usarlo en las rutas
         $middleware->alias([
             'session.current' => SingleActiveSession::class,

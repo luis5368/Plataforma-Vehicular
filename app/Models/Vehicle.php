@@ -1,15 +1,20 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Vehicle extends Model
 {
     use HasFactory;
+
+    protected $casts = ['synthetic_data' => 'boolean'];
+
     protected $fillable = [
-        'vin', 'plate', 'brand', 'model', 'year', 'color', 
+        'vin', 'plate', 'brand', 'model', 'year', 'color',
         'department', 'municipality', 'zone',
-        'theft_report_address', 'theft_latitude', 'theft_longitude', 'observations', 'status', 'registered_by'
+        'theft_report_address', 'theft_latitude', 'theft_longitude', 'observations', 'status', 'registered_by',
     ];
 
     public function registeredBy()

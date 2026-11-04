@@ -9,6 +9,7 @@
     @include('layouts.assets')
 </head>
 <body class="app-page">
+<x-staging-notice />
 <a class="skip-link" href="#main-content">Saltar al contenido</a>
 
     <!-- Barra de Navegación Superior -->

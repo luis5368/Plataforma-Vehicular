@@ -27,6 +27,8 @@ class PublicSearchController extends Controller
         $result = ['found' => (bool) $vehicle, 'identifier' => $request->vin ?: $request->plate,
             'status' => $vehicle?->theftReport?->displayStatus() ?? 'sin_reporte', 'source' => $vehicle?->theftReport?->sourceLabel(), 'validation_status' => $vehicle?->theftReport?->validation_status];
 
+        $result['synthetic_data'] = (bool) $vehicle?->synthetic_data;
+
         return response()->view('public-result', compact('result'))->header('Cache-Control', 'no-store');
     }
 }

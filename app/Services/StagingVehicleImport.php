@@ -172,7 +172,7 @@ class StagingVehicleImport
             'plate' => ['required', 'regex:/^[A-Z]{1,2}[0-9]{3}[A-Z]{3}$/'],
             'source_row_number' => ['required', 'integer', 'min:1'],
             'synthetic_data' => ['required', 'in:1'], 'has_theft_report' => ['required', 'in:1'],
-            'vehicle_status' => ['required', 'in:reportado'], 'report_status' => ['required', 'in:activo'],
+            'vehicle_status' => ['required', 'in:activo'], 'report_status' => ['required', 'in:activo'],
             'validation_status' => ['required', 'in:pendiente'], 'case_status' => ['required', 'in:abierto'],
             'validation_method' => ['prohibited'], 'validated_at' => ['prohibited'], 'validated_by' => ['prohibited'],
             'brand' => ['required', 'string', 'max:100'], 'model' => ['required', 'string', 'max:100'],
@@ -225,7 +225,7 @@ class StagingVehicleImport
                 foreach ($chunk as $row) {
                     $vehicle = array_intersect_key($row, array_flip(['vin', 'plate', 'brand', 'model', 'year', 'color', 'department', 'municipality', 'zone', 'theft_report_address', 'theft_latitude', 'theft_longitude', 'observations']));
                     $vehicle = array_map(fn ($value) => $value === '' ? null : $value, $vehicle);
-                    $vehicles[] = $vehicle + ['registered_by' => $actor->id, 'synthetic_data' => true, 'status' => 'reportado', 'staging_import_batch_id' => $batch, 'created_at' => $now, 'updated_at' => $now];
+                    $vehicles[] = $vehicle + ['registered_by' => $actor->id, 'synthetic_data' => true, 'status' => $row['vehicle_status'], 'staging_import_batch_id' => $batch, 'created_at' => $now, 'updated_at' => $now];
                 }
                 DB::table('vehicles')->insert($vehicles);
                 $ids = DB::table('vehicles')->where('staging_import_batch_id', $batch)->whereIn('vin', array_column($chunk, 'vin'))->pluck('id', 'vin');
